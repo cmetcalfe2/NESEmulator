@@ -1,0 +1,14 @@
+Implied:
+Cycle 1: fetch opcode
+Cycle 2: fetch operand, execute instruction (for 2 cycle instructions this will finish, else usually does nothing)
+Cycle 3+: execute instruction until finished (all implied instructions need cycle switch and instructionFinished=true at the end)
+
+"fix the high byte of effective address"
+When adding something to the low address byte, this may affect the high byte due to overflow
+To resolve, in the "fix byte" cycle, add the overflow to the high byte
+(This isn't fixed on zero page indexed instructions as the high byte is always 0)
+
+Memory mirroring - Have array of pointers to memory locations
+This array is used when reading or writing
+Array points to base memory address if not mirroring location or
+to original memory address if in mirroring zone
