@@ -527,3 +527,8 @@ void CPU::TYA()
 
 	instructionFinished = true;
 }
+
+void CPU::UNK()
+{
+	// Do nothing
+}

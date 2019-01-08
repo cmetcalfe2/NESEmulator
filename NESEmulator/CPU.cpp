@@ -106,6 +106,12 @@ void CPU::DecrementStackPointer()
 
 void CPU::InitialiseInstructionTables()
 {
+	// Initialise instruction jump table
+	for (int i = 0; i < 256; i++)
+	{
+		instructionJumpTable[i] = instructionFunctions[InstructionInfo::instructions[i]];
+	}
+
 	// Initalise instruction types (read, write, read-write)
 	for (int i = 0; i < 256; i++)
 	{

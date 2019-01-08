@@ -113,6 +113,23 @@ private:
 	void TYA();
 	void UNK();
 
+	// Address Mode functions
+	void AddressMode_NA();						// Instruction not implemented (Unofficial/undocumented opcode)
+	void AddressMode_ACC();						// Accumulator / Accumulator
+	void AddressMode_IMPL();					// Accumulator
+	void AddressMode_IMM();						// Immediate
+	void AddressMode_ZP();						// Zero page
+	void AddressMode_ZPI(uint8_t* reg);	// Zero page indexed
+	void AddressMode_ZPX();						// Zero page, X
+	void AddressMode_ZPY();						// Zero page, Y
+	void AddressMode_REL();						// Relative
+	void AddressMode_ABS();						// Absolute
+	void AddressMode_ABSX();					// Absolute, X
+	void AddressMode_ABSY();					// Absolute, Y
+	void AddressMode_INDIR();					// Indirect
+	void AddressMode_INDIRX();					// Indexed Indirect
+	void AddressMode_INDIRY();					// Indirect Indexed
+
 	// Processor Status Helpers
 	bool IsSignOverflow(uint8_t oldVal, uint8_t val, uint8_t newVal);
 	void UpdateCFlag(bool set);
@@ -124,6 +141,7 @@ private:
 	void UpdateVFlag(bool set);
 
 	// Register helpers
+	void IncrementPC();
 	void IncrementStackPointer();
 	void DecrementStackPointer();
 
@@ -135,73 +153,78 @@ private:
 	uint8_t y;
 
 	// Busses/Instruction vars
-	uint16_t pointer = 0x0000;
+	uint8_t tempByte = 0x00;
+	uint16_t tempWord = 0x0000; // Temp latch used for some instructions (i.e. absolute JMP)
 	uint8_t* index = NULL;
 	uint16_t address = 0x0000;
 
 	// Instruction tables
-	InstructionFunction funcs[1] = { &CPU::TYA };
-	std::map<Instruction, InstructionFunction> instructionFunctions[57] = {
-		{ IN_UNK, &CPU::UNK } // Unknown instruction (Unofficial/undocumented opcode)
-		IN_ADC,
-		IN_AND,
-		IN_ASL,
-		IN_BCC,
-		IN_BCS,
-		IN_BEQ,
-		IN_BIT,
-		IN_BMI,
-		IN_BNE,
-		IN_BPL,
-		IN_BRK,
-		IN_BVC,
-		IN_BVS,
-		IN_CLC,
-		IN_CLD,
-		IN_CLI,
-		IN_CLV,
-		IN_CMP,
-		IN_CPX,
-		IN_CPY,
-		IN_DEC,
-		IN_DEX,
-		IN_DEY,
-		IN_EOR,
-		IN_INC,
-		IN_INX,
-		IN_INY,
-		IN_JMP,
-		IN_JSR,
-		IN_LDA,
-		IN_LDX,
-		IN_LDY,
-		IN_LSR,
-		IN_NOP,
-		IN_ORA,
-		IN_PHA,
-		IN_PHP,
-		IN_PLA,
-		IN_PLP,
-		IN_ROL,
-		IN_ROR,
-		IN_RTI,
-		IN_RTS,
-		IN_SBC,
-		IN_SEC,
-		IN_SED,
-		IN_SEI,
-		IN_STA,
-		IN_STX,
-		IN_STY,
-		IN_TAX,
-		IN_TAY,
-		IN_TSX,
-		IN_TXA,
-		IN_TXS,
-		IN_TYA
-	}
+	std::map<Instruction, InstructionFunction> instructionFunctions = {
+		{ IN_UNK, &CPU::UNK }, // Unknown instruction (Unofficial/undocumented opcode)
+		{ IN_ADC, &CPU::ADC },
+		{ IN_AND, &CPU::AND },
+		{ IN_ASL, &CPU::ASL },
+		{ IN_BCC, &CPU::BCC },
+		{ IN_BCS, &CPU::BCS },
+		{ IN_BEQ, &CPU::BEQ },
+		{ IN_BIT, &CPU::BIT },
+		{ IN_BMI, &CPU::BMI },
+		{ IN_BNE, &CPU::BNE },
+		{ IN_BPL, &CPU::BPL },
+		{ IN_BRK, &CPU::BRK },
+		{ IN_BVC, &CPU::BVC },
+		{ IN_BVS, &CPU::BVS },
+		{ IN_CLC, &CPU::CLC },
+		{ IN_CLD, &CPU::CLD },
+		{ IN_CLI, &CPU::CLI },
+		{ IN_CLV, &CPU::CLV },
+		{ IN_CMP, &CPU::CMP },
+		{ IN_CPX, &CPU::CPX },
+		{ IN_CPY, &CPU::CPY },
+		{ IN_DEC, &CPU::DEC },
+		{ IN_DEX, &CPU::DEX },
+		{ IN_DEY, &CPU::DEY },
+		{ IN_EOR, &CPU::EOR },
+		{ IN_INC, &CPU::INC },
+		{ IN_INX, &CPU::INX },
+		{ IN_INY, &CPU::INY },
+		{ IN_JMP, &CPU::JMP },
+		{ IN_JSR, &CPU::JSR },
+		{ IN_LDA, &CPU::LDA },
+		{ IN_LDX, &CPU::LDX },
+		{ IN_LDY, &CPU::LDY },
+		{ IN_LSR, &CPU::LSR },
+		{ IN_NOP, &CPU::NOP },
+		{ IN_ORA, &CPU::ORA },
+		{ IN_PHA, &CPU::PHA },
+		{ IN_PHP, &CPU::PHP },
+		{ IN_PLA, &CPU::PLA },
+		{ IN_PLP, &CPU::PLP },
+		{ IN_ROL, &CPU::ROL },
+		{ IN_ROR, &CPU::ROR },
+		{ IN_RTI, &CPU::RTI },
+		{ IN_RTS, &CPU::RTS },
+		{ IN_SBC, &CPU::SBC },
+		{ IN_SEC, &CPU::SEC },
+		{ IN_SED, &CPU::SED },
+		{ IN_SEI, &CPU::SEI },
+		{ IN_STA, &CPU::STA },
+		{ IN_STX, &CPU::STX },
+		{ IN_STY, &CPU::STY },
+		{ IN_TAX, &CPU::TAX },
+		{ IN_TAY, &CPU::TAY },
+		{ IN_TSX, &CPU::TSX },
+		{ IN_TXA, &CPU::TXA },
+		{ IN_TXS, &CPU::TXS },
+		{ IN_TYA, &CPU::TYA }
+	};
 
+	InstructionFunction instructionJumpTable[256];
+
+	// Current instruction info
+	uint16_t curInstructionAddress;
 	InstructionAddressingMode curAddressMode = AM_NA;
+	InstructionType curInstructionType = IT_NA;
 	int instructionProgress = 0; // Number of cycles executed for current instruction
 	bool instructionFinished = false; // Instruction has finished executing
 };
