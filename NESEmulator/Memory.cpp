@@ -5,6 +5,7 @@
 Memory::Memory()
 {
 	Clear();
+	InitMemoryMap();
 }
 
 
@@ -20,9 +21,33 @@ void Memory::Clear()
 	}
 }
 
+void Memory::InitMemoryMap()
+{
+	for (uint16_t i = 0x0000; i < MEMORY_AMOUNT; i++)
+	{
+		memoryMap[i] = i;
+	}
+
+	// System memory mirroring
+	uint16_t systemMirroringLocations[3] = { 0x0800, 0x1000, 0x1800 };
+	for (int i = 0; i < 3; i++)
+	{
+		for (uint16_t j = 0x0000; j <= 0x07FF; j++)
+		{
+			memoryMap[systemMirroringLocations[i] + j] = j;
+		}
+	}
+
+	// PPU I/O register mirroring
+	for (uint16_t i = 0x2008; i <= 0x3FFF; i++)
+	{
+		memoryMap[i] = 0x2000 + (i % 8);
+	}
+}
+
 uint8_t Memory::ReadByte(uint16_t addr)
 {
-	return memory[addr];
+	return memory[memoryMap[addr]];
 }
 
 uint16_t Memory::ReadWord(uint16_t addr)
@@ -32,7 +57,7 @@ uint16_t Memory::ReadWord(uint16_t addr)
 
 void Memory::SetByte(uint16_t addr, uint8_t val)
 {
-	memory[addr] = val;
+	memory[memoryMap[addr]] = val;
 }
 
 void Memory::SetWord(uint16_t addr, uint16_t val)

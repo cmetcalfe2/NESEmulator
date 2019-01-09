@@ -2,9 +2,12 @@
 #include "CPUInstructions.h"
 #include "Memory.h"
 #include <iostream>
+#include <ctime>
+#include <vector>
 
 class CPU;
 typedef void (CPU::*InstructionFunction)();
+typedef void (CPU::*AddressModeFunction)();
 
 struct ProcessorStatus
 {
@@ -47,12 +50,17 @@ public:
 	CPU(Memory* memory);
 	~CPU();
 
+	void Reset();
+	void Cycle();
+
 	Memory* mem;
 	ProcessorStatus ps;
 
 private:
 	void InitialiseInstructionTables();
 	void InitialiseRegisters();
+
+	void Log();
 
 	// Instruction functions
 	void ADC();
@@ -119,11 +127,12 @@ private:
 	void AddressMode_IMPL();					// Accumulator
 	void AddressMode_IMM();						// Immediate
 	void AddressMode_ZP();						// Zero page
-	void AddressMode_ZPI(uint8_t* reg);	// Zero page indexed
+	void AddressMode_ZPI(uint8_t* reg);			// Zero page indexed
 	void AddressMode_ZPX();						// Zero page, X
 	void AddressMode_ZPY();						// Zero page, Y
 	void AddressMode_REL();						// Relative
 	void AddressMode_ABS();						// Absolute
+	void AddressMode_ABSI(uint8_t* reg);		// Absolute indexed
 	void AddressMode_ABSX();					// Absolute, X
 	void AddressMode_ABSY();					// Absolute, Y
 	void AddressMode_INDIR();					// Indirect
@@ -136,9 +145,9 @@ private:
 	void UpdateZFlag(bool set);
 	void UpdateIFlag(bool set);
 	void UpdateDFlag(bool set);
+	void UpdateVFlag(bool set);
 	void UpdateNFlag(bool set);
 	void UpdateZNFlags(uint8_t val);
-	void UpdateVFlag(bool set);
 
 	// Register helpers
 	void IncrementPC();
@@ -156,7 +165,10 @@ private:
 	uint8_t tempByte = 0x00;
 	uint16_t tempWord = 0x0000; // Temp latch used for some instructions (i.e. absolute JMP)
 	uint8_t* index = NULL;
+	uint16_t pointer = 0x00;
 	uint16_t address = 0x0000;
+	uint8_t memVal = 0x00;
+	bool branchTaken = false;
 
 	// Instruction tables
 	std::map<Instruction, InstructionFunction> instructionFunctions = {
@@ -219,13 +231,39 @@ private:
 		{ IN_TYA, &CPU::TYA }
 	};
 
+	std::map<InstructionAddressingMode, AddressModeFunction> addressModeFunctions = {
+		{ AM_NA, &CPU::AddressMode_NA },			// Instruction not implemented (Unofficial/undocumented opcode)
+		{ AM_ACC, &CPU::AddressMode_ACC },			// Accumulator / Accumulator
+		{ AM_IMPL, &CPU::AddressMode_IMPL },		// Accumulator
+		{ AM_IMM, &CPU::AddressMode_IMM },			// Immediate
+		{ AM_ZP, &CPU::AddressMode_ZP },			// Zero page
+		{ AM_ZPX, &CPU::AddressMode_ZPX },			// Zero page, X
+		{ AM_ZPY, &CPU::AddressMode_ZPY },			// Zero page, Y
+		{ AM_REL, &CPU::AddressMode_REL },			// Relative
+		{ AM_ABS, &CPU::AddressMode_ABS },			// Absolute
+		{ AM_ABSX, &CPU::AddressMode_ABSX },		// Absolute, X
+		{ AM_ABSY, &CPU::AddressMode_ABSY },		// Absolute, Y
+		{ AM_INDIR, &CPU::AddressMode_INDIR },		// Indirect
+		{ AM_INDIRX, &CPU::AddressMode_INDIRX },	// Indexed Indirect
+		{ AM_INDIRY, &CPU::AddressMode_INDIRY }		// Indirect Indexed
+	};
+
 	InstructionFunction instructionJumpTable[256];
+	AddressModeFunction addressModeJumpTable[256];
+	InstructionType instructionTypeTable[256];
 
 	// Current instruction info
-	uint16_t curInstructionAddress;
+	uint8_t curInstructionOpcode;
+	uint16_t curInstructionPC = 0x0000;
 	InstructionAddressingMode curAddressMode = AM_NA;
 	InstructionType curInstructionType = IT_NA;
 	int instructionProgress = 0; // Number of cycles executed for current instruction
-	bool instructionFinished = false; // Instruction has finished executing
+	bool instructionFinished = true; // Instruction has finished executing
+
+	// Timer/Debugging
+	std::clock_t startTime;
+	unsigned long cyclesThisSecond = 0;
+	unsigned long cyclesElapsed = 0;
+	std::vector<Instruction> callHistory;
 };
 

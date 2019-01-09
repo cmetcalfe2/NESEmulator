@@ -11,7 +11,9 @@ public:
 	NES();
 	~NES();
 
-	void LoadROM(std::string path);
+	bool LoadROM(std::string path);
+
+	void Cycle();
 
 private:
 	CPU* processor;

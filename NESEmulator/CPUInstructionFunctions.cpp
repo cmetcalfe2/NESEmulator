@@ -59,17 +59,17 @@ void CPU::ASL()
 
 void CPU::BCC()
 {
-
+	branchTaken = !ps.C();
 }
 
 void CPU::BCS()
 {
-
+	branchTaken = ps.C();
 }
 
 void CPU::BEQ()
 {
-
+	branchTaken = ps.Z();
 }
 
 void CPU::BIT()
@@ -84,32 +84,57 @@ void CPU::BIT()
 
 void CPU::BMI()
 {
-
+	branchTaken = ps.N();
 }
 
 void CPU::BNE()
 {
-
+	branchTaken = !ps.Z();
 }
 
 void CPU::BPL()
 {
-
+	branchTaken = !ps.N();
 }
 
 void CPU::BRK()
 {
-	// Do not implement
+	switch (instructionProgress)
+	{
+	case 1:
+		IncrementPC();
+		break;
+	case 2:
+		mem->SetByte(sp, (pc & 0xFF00) >> 8);
+		DecrementStackPointer();
+		break;
+	case 3:
+		mem->SetByte(sp, (pc & 0x00FF));
+		DecrementStackPointer();
+		break;
+	case 4:
+		mem->SetByte(sp, ps.status);
+		DecrementStackPointer();
+		break;
+	case 5:
+		ps.SetB();
+		pc = mem->ReadByte(0xFFFE);
+		break;
+	case 6:
+		pc += mem->ReadByte(0xFFFF) << 8;
+		instructionFinished = true;
+		break;
+	}
 }
 
 void CPU::BVC()
 {
-	
+	branchTaken = !ps.V();
 }
 
 void CPU::BVS()
 {
-
+	branchTaken = ps.V();
 }
 
 void CPU::CLC()
@@ -228,12 +253,34 @@ void CPU::INY()
 
 void CPU::JMP()
 {
-
+	// Do not implement, implemented in address mode functions
 }
 
 void CPU::JSR()
 {
-
+	switch (instructionProgress)
+	{
+	case 1:
+		tempWord = mem->ReadByte(pc);
+		IncrementPC();
+		break;
+	case 2:
+		// internal operation (predecrement S?)
+		break;
+	case 3:
+		mem->SetByte(sp, (pc & 0xFF00) >> 8);
+		DecrementStackPointer();
+		break;
+	case 4:
+		mem->SetByte(sp, pc & 0x00FF);
+		DecrementStackPointer();
+		break;
+	case 5:
+		tempWord += mem->ReadByte(pc) << 8;
+		pc = tempWord;
+		instructionFinished = true;
+		break;
+	}
 }
 
 void CPU::LDA()
@@ -391,7 +438,6 @@ void CPU::RTI()
 		break;
 	case 5:
 		pc += mem->ReadByte(sp) << 8;
-		IncrementStackPointer();
 		instructionFinished = true;
 		break;
 	}
@@ -410,11 +456,10 @@ void CPU::RTS()
 		break;
 	case 4:
 		pc += mem->ReadByte(sp) << 8;
-		IncrementStackPointer();
-		instructionFinished = true;
 		break;
 	case 5:
-		pc += 2;
+		IncrementPC();
+		instructionFinished = true;
 		break;
 	}
 }

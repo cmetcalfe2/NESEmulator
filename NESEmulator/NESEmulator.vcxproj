@@ -112,6 +112,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CPU.cpp" />
+    <ClCompile Include="CPUAddressModeFunctions.cpp" />
     <ClCompile Include="CPUInstructionFunctions.cpp" />
     <ClCompile Include="CPUInstructions.cpp" />
     <ClCompile Include="main.cpp" />

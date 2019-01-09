@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\CPU">
+      <UniqueIdentifier>{25333609-2bb2-4a31-8789-b8baac3d08d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\CPU">
+      <UniqueIdentifier>{79d45fb0-9dc2-4215-8afe-a5736afb8f3c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -21,31 +27,34 @@
     <ClCompile Include="NES.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CPU.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CPUInstructions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Memory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CPU.cpp">
+      <Filter>Source Files\CPU</Filter>
+    </ClCompile>
+    <ClCompile Include="CPUAddressModeFunctions.cpp">
+      <Filter>Source Files\CPU</Filter>
+    </ClCompile>
     <ClCompile Include="CPUInstructionFunctions.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\CPU</Filter>
+    </ClCompile>
+    <ClCompile Include="CPUInstructions.cpp">
+      <Filter>Source Files\CPU</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NES.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CPU.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CPUInstructions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Memory.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CPU.h">
+      <Filter>Header Files\CPU</Filter>
+    </ClInclude>
+    <ClInclude Include="CPUInstructions.h">
+      <Filter>Header Files\CPU</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
