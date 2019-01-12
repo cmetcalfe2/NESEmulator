@@ -19,6 +19,18 @@
     <Filter Include="Header Files\CPU">
       <UniqueIdentifier>{79d45fb0-9dc2-4215-8afe-a5736afb8f3c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\ROM Tests">
+      <UniqueIdentifier>{4fa68a6d-f862-4904-a463-1c0f95a2281e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ROM Tests">
+      <UniqueIdentifier>{0ffa3f04-b232-4786-9274-a1bf51a79616}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Mappers">
+      <UniqueIdentifier>{c8c65b7f-b6ba-48c4-a734-903b3d8cc0f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Mappers">
+      <UniqueIdentifier>{2dfd018a-caba-420d-aba1-c74a4138af67}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -42,6 +54,21 @@
     <ClCompile Include="CPUInstructions.cpp">
       <Filter>Source Files\CPU</Filter>
     </ClCompile>
+    <ClCompile Include="Logger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ROMTest.cpp">
+      <Filter>Source Files\ROM Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="Mapper.cpp">
+      <Filter>Source Files\Mappers</Filter>
+    </ClCompile>
+    <ClCompile Include="CPUTestBlargg.cpp">
+      <Filter>Source Files\ROM Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="MapperMMC1.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NES.h">
@@ -55,6 +82,24 @@
     </ClInclude>
     <ClInclude Include="CPUInstructions.h">
       <Filter>Header Files\CPU</Filter>
+    </ClInclude>
+    <ClInclude Include="Logger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ROMTest.h">
+      <Filter>Header Files\ROM Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="Mapper.h">
+      <Filter>Header Files\Mappers</Filter>
+    </ClInclude>
+    <ClInclude Include="CPUTestBlargg.h">
+      <Filter>Header Files\ROM Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="MapperMMC1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AllMappers.h">
+      <Filter>Header Files\Mappers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

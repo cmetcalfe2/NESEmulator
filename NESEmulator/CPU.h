@@ -1,6 +1,7 @@
 #pragma once
 #include "CPUInstructions.h"
 #include "Memory.h"
+#include "Logger.h"
 #include <iostream>
 #include <ctime>
 #include <vector>
@@ -21,6 +22,10 @@ public:
 	uint8_t V() { return (status >> 6) & 1; };
 	void SetV() { status |= 1 << 6; };
 	void UnSetV() { status &= ~(1 << 6); };
+
+	uint8_t U() { return (status >> 5) & 1; }; // Unused bit, set by PHP and BRK
+	void SetU() { status |= 1 << 5; };
+	void UnSetU() { status &= ~(1 << 5); };
 
 	uint8_t B() { return (status >> 4) & 1; };
 	void SetB() { status |= 1 << 4; };
@@ -52,6 +57,9 @@ public:
 
 	void Reset();
 	void Cycle();
+
+	bool IsInstructionFinished() { return instructionFinished; }
+	unsigned long GetCyclesElapsed() { return cyclesElapsed; }
 
 	Memory* mem;
 	ProcessorStatus ps;
@@ -153,10 +161,12 @@ private:
 	void IncrementPC();
 	void IncrementStackPointer();
 	void DecrementStackPointer();
+	uint8_t RealStackPointer() { return (sp - 0x0100) & 0x00FF; };
+	void SetRealStackPointer(uint8_t val) { sp = val + 0x0100; };
 
 	// Registers
 	uint16_t pc;
-	uint8_t sp;
+	uint16_t sp;
 	uint8_t a;
 	uint8_t x;
 	uint8_t y;
@@ -169,6 +179,7 @@ private:
 	uint16_t address = 0x0000;
 	uint8_t memVal = 0x00;
 	bool branchTaken = false;
+	bool pageCrossed = false;
 
 	// Instruction tables
 	std::map<Instruction, InstructionFunction> instructionFunctions = {
@@ -251,12 +262,16 @@ private:
 	InstructionFunction instructionJumpTable[256];
 	AddressModeFunction addressModeJumpTable[256];
 	InstructionType instructionTypeTable[256];
+	std::string instructionNameStringTable[256];
 
 	// Current instruction info
 	uint8_t curInstructionOpcode;
+	uint8_t curOperand1;
+	uint8_t curOperand2;
 	uint16_t curInstructionPC = 0x0000;
 	InstructionAddressingMode curAddressMode = AM_NA;
 	InstructionType curInstructionType = IT_NA;
+	std::string curInstructionNameString = "UNK";
 	int instructionProgress = 0; // Number of cycles executed for current instruction
 	bool instructionFinished = true; // Instruction has finished executing
 

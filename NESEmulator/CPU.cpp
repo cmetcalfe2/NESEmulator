@@ -6,7 +6,6 @@ CPU::CPU(Memory* memory)
 {
 	mem = memory;
 	InitialiseInstructionTables();
-	Reset();
 }
 
 
@@ -25,13 +24,14 @@ void CPU::Reset()
 void CPU::InitialiseRegisters()
 {
 	pc = (mem->ReadByte(0xFFFD) << 8) + mem->ReadByte(0xFFFC);
-	if (pc == 0 || pc == 0xFFFF)
+	/*if (pc == 0 || pc == 0xFFFF)
 	{
 		pc = 0x8000;
-	}
-	pc = 0xC000; // TEST : REMOVE
+	}*/
+	//pc = 0xC000; // TEST : REMOVE
 	printf("0x%X\n", pc);
 	sp = 0x01FF;
+	//sp = 0x01FD; // TEST : REMOVE
 	a = 0;
 	x = 0;
 	y = 0;
@@ -128,7 +128,8 @@ void CPU::InitialiseInstructionTables()
 	{
 		instructionJumpTable[i] = instructionFunctions[InstructionInfo::instructions[i]]; // instruction jump table
 		instructionTypeTable[i] = InstructionInfo::instructionTypes.at(InstructionInfo::instructions[i]); // instruction type table(read, write, read - write)
-		addressModeJumpTable[i] = addressModeFunctions[InstructionInfo::instructionAddressingModes[i]];
+		addressModeJumpTable[i] = addressModeFunctions[InstructionInfo::instructionAddressingModes[i]]; // address mode function jump table
+		instructionNameStringTable[i] = InstructionInfo::instructionNameStrings.at(InstructionInfo::instructions[i]); // instruction name strings
 	}
 }
 
@@ -137,16 +138,12 @@ void CPU::Cycle()
 	if (instructionFinished)
 	{
 		Log();
-		uint8_t lastError = mem->ReadByte(0x0002);
-		if (lastError != 0)
-		{
-			printf("Error: %X\n", lastError);
-		}
 
 		// Fetch opcode of next instruction
 		instructionProgress = 0;
 		curInstructionPC = pc;
 		curInstructionOpcode = mem->ReadByte(pc);
+		curInstructionNameString = instructionNameStringTable[curInstructionOpcode];
 		callHistory.push_back(InstructionInfo::instructions[curInstructionOpcode]);
 		curAddressMode = InstructionInfo::instructionAddressingModes[curInstructionOpcode];
 		curInstructionType = instructionTypeTable[curInstructionOpcode];
@@ -161,8 +158,6 @@ void CPU::Cycle()
 	cyclesThisSecond++;
 	cyclesElapsed++;
 
-	//if (cyclesThisSecond )
-
 	// Timing
 	if ((std::clock() - startTime) >= CLOCKS_PER_SEC)
 	{
@@ -174,5 +169,6 @@ void CPU::Cycle()
 
 void CPU::Log()
 {
-	printf("%04X  %02X %04X    A:%02X X:%02X Y:%02X    PS:%02X    CYC:%i\n", curInstructionPC, curInstructionOpcode, address, a, x, y, ps.status, cyclesElapsed);
+	bool hasTwoOperands = (curAddressMode == AM_ABS || curAddressMode == AM_ABSX || curAddressMode == AM_ABSY || curAddressMode == AM_INDIR);
+	Logger::LogCPUInstruction(curInstructionPC, curInstructionOpcode, curOperand1, curOperand2, address, a, x, y, RealStackPointer(), ps.status, cyclesElapsed, curInstructionNameString, hasTwoOperands);
 }

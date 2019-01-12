@@ -95,4 +95,5 @@ public:
 	static const InstructionAddressingMode instructionAddressingModes[256];
 	static const Instruction instructions[256];
 	static const std::map<Instruction, InstructionType> instructionTypes;
+	static const std::map<Instruction, std::string> instructionNameStrings;
 };

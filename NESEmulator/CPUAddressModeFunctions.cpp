@@ -8,18 +8,21 @@ void CPU::AddressMode_NA()
 
 void CPU::AddressMode_ACC()
 {
+	memVal = a;
 	(this->*instructionJumpTable[curInstructionOpcode])();
+	a = memVal;
 	instructionFinished = true;
 }
 
 void CPU::AddressMode_IMPL()
-{
+{ 
 	(this->*instructionJumpTable[curInstructionOpcode])();
 }
 
 void CPU::AddressMode_IMM()
 {
-	address = mem->ReadByte(pc);
+	memVal = mem->ReadByte(pc);
+	curOperand1 = memVal;
 	IncrementPC();
 
 	(this->*instructionJumpTable[curInstructionOpcode])();
@@ -33,24 +36,29 @@ void CPU::AddressMode_ZP()
 	{
 	case 1:
 		address = mem->ReadByte(pc);
+		curOperand1 = address & 0x00FF;
 		IncrementPC();
 		break;
 	case 2:
+		memVal = mem->ReadByte(address);
 		if (curInstructionType == IT_R || curInstructionType == IT_W)
 		{
 			(this->*instructionJumpTable[curInstructionOpcode])();
+
+			if (curInstructionType == IT_W)
+			{
+				mem->SetByte(address, memVal);
+			}
+
 			instructionFinished = true;
-		}
-		else
-		{
-			tempByte = mem->ReadByte(address);
 		}
 		break;
 	case 3:
-		mem->SetByte(address, tempByte);
+		mem->SetByte(address, memVal);
+		(this->*instructionJumpTable[curInstructionOpcode])();
 		break;
 	case 4:
-		(this->*instructionJumpTable[curInstructionOpcode])();
+		mem->SetByte(address, memVal);
 		instructionFinished = true;
 		break;
 	}
@@ -71,31 +79,48 @@ void CPU::AddressMode_ZPI(uint8_t* reg)
 	switch (instructionProgress)
 	{
 	case 1:
+	{
 		address = mem->ReadByte(pc);
+		curOperand1 = address & 0x00FF;
 		IncrementPC();
 		break;
+	}
 	case 2:
-		tempByte = mem->ReadByte(address);
+	{
+		memVal = mem->ReadByte(address);
 		address += *reg;
 		address &= 0x00FF; // High byte is always 0 (page crossings not handled)
 		break;
+	}
 	case 3:
+	{
+		memVal = mem->ReadByte(address);
+
 		if (curInstructionType == IT_R || curInstructionType == IT_W)
 		{
 			(this->*instructionJumpTable[curInstructionOpcode])();
+
+			if (curInstructionType == IT_W)
+			{
+				mem->SetByte(address, memVal);
+			}
+
 			instructionFinished = true;
 		}
-		else
-		{
-			tempByte = mem->ReadByte(address);
-		}
+
 		break;
+	}
 	case 4:
-		mem->SetByte(address, tempByte);
-		break;
-	case 5:
+	{
+		mem->SetByte(address, memVal);
 		(this->*instructionJumpTable[curInstructionOpcode])();
+		break;
+	}
+	case 5:
+	{
+		mem->SetByte(address, memVal);
 		instructionFinished = true;
+	}
 	}
 }
 
@@ -105,7 +130,8 @@ void CPU::AddressMode_REL()
 	{
 	case 1:
 		(this->*instructionJumpTable[curInstructionOpcode])();
-		tempByte = mem->ReadByte(pc);
+		memVal = mem->ReadByte(pc);
+		curOperand1 = memVal;
 		IncrementPC();
 		if (!branchTaken)
 		{
@@ -113,19 +139,24 @@ void CPU::AddressMode_REL()
 		}
 		break;
 	case 2:
-		tempWord = pc & 0x00FF; // PC low byte
-		tempWord += tempByte;
-		if (tempWord <= 0x00FF)
+	{
+		uint8_t pcLowByte = pc & 0x00FF; // PC low byte
+		uint8_t oldPcLowByte = pcLowByte;
+		pcLowByte += memVal;
+		pc = (pc & 0xFF00) | pcLowByte;
+		pageCrossed = (pcLowByte < oldPcLowByte);
+		if (!pageCrossed)
 		{
-			// no page crossing
-			pc += tempByte;
 			instructionFinished = true;
 		}
 		break;
+	}
 	case 3:
-		pc += tempByte;
+	{
+		pc += 0x0100;
 		instructionFinished = true;
 		break;
+	}
 	}
 }
 
@@ -135,37 +166,55 @@ void CPU::AddressMode_ABS()
 	switch (instructionProgress)
 	{
 	case 1:
-		tempWord = mem->ReadByte(pc);
+	{
+		address = mem->ReadByte(pc);
+		curOperand1 = address & 0x00FF;
 		IncrementPC();
 		break;
+	}
 	case 2:
-		tempWord += mem->ReadByte(pc) << 8;
+	{
+		address += mem->ReadByte(pc) << 8;
+		curOperand2 = (address >> 8) & 0x00FF;
 		if (curInstructionOpcode == 0x4C) // JMP, special exception
 		{
-			pc = tempWord;
+			pc = address;
 			instructionFinished = true;
 		}
 		else
 		{
-			address = tempWord;
+			IncrementPC();
 		}
 		break;
+	}
 	case 3:
+	{
+		memVal = mem->ReadByte(address);
 		if (curInstructionType == IT_R || curInstructionType == IT_W)
 		{
 			(this->*instructionJumpTable[curInstructionOpcode])();
 
+			if (curInstructionType == IT_W)
+			{
+				mem->SetByte(address, memVal);
+			}
+
 			instructionFinished = true;
 		}
-		tempByte = mem->ReadByte(address);
 		break;
+	}
 	case 4:
-		mem->SetByte(address, tempByte);
-		break;
-	case 5:
+	{
+		mem->SetByte(address, memVal);
 		(this->*instructionJumpTable[curInstructionOpcode])();
+		break;
+	}
+	case 5:
+	{
+		mem->SetByte(address, memVal);
 		instructionFinished = true;
 		break;
+	}
 	}
 
 }
@@ -185,45 +234,71 @@ void CPU::AddressMode_ABSI(uint8_t* reg)
 	switch (instructionProgress)
 	{
 	case 1:
-		tempWord = mem->ReadByte(pc);
+	{
+		address = mem->ReadByte(pc);
+		curOperand1 = address & 0x00FF;
 		IncrementPC();
 		break;
+	}
 	case 2:
-		address = mem->ReadByte(pc) << 8;
-		tempWord += *reg;
+	{
+		address += mem->ReadByte(pc) << 8;
+		curOperand2 = (address >> 8) & 0x00FF;
+		uint8_t addressLowByte = address & 0x00FF;
+		uint8_t oldAddressLowByte = addressLowByte;
+		addressLowByte += *reg;
+		address = (address & 0xFF00) | addressLowByte;
+		pageCrossed = (addressLowByte < oldAddressLowByte);
 		IncrementPC();
 		break;
+	}
 	case 3:
-		tempByte = mem->ReadByte(address + (tempWord & 0x00FF));
+	{
+		memVal = mem->ReadByte(address);
 		if (curInstructionType == IT_R)
 		{
 			(this->*instructionJumpTable[curInstructionOpcode])();
-			if (tempWord <= 0x00FF)
+			if (!pageCrossed)
 			{
 				// No page crossing
 				instructionFinished = true;
 			}
 		}
-		address += tempWord;
+
+		if (pageCrossed)
+		{
+			address += 0x0100;
+		}
 		break;
+	}
 	case 4:
+	{
+		memVal = mem->ReadByte(address);
 		if (curInstructionType == IT_R || curInstructionType == IT_W)
 		{
 			(this->*instructionJumpTable[curInstructionOpcode])();
+
+			if (curInstructionType == IT_W)
+			{
+				mem->SetByte(address, memVal);
+			}
+
 			instructionFinished = true;
 		}
-		else
-		{
-			tempByte = mem->ReadByte(address);
-		}
 		break;
+	}
 	case 5:
-		mem->SetByte(address, tempByte);
-		break;
-	case 6:
+	{
+		mem->SetByte(address, memVal);
 		(this->*instructionJumpTable[curInstructionOpcode])();
+		break;
+	}
+	case 6:
+	{
+		mem->SetByte(address, memVal);
 		instructionFinished = true;
 		break;
+	}
 	}
 }
 
@@ -232,25 +307,37 @@ void CPU::AddressMode_INDIR()
 	switch (instructionProgress)
 	{
 	case 1:
+	{
 		pointer = mem->ReadByte(pc);
+		curOperand1 = pointer & 0x00FF;
 		IncrementPC();
 		break;
+	}
 	case 2:
+	{
 		pointer += mem->ReadByte(pc) << 8;
+		curOperand2 = (pointer >> 8) & 0x00FF;
 		IncrementPC();
 		break;
+	}
 	case 3:
-		tempByte = mem->ReadByte(pointer);
+	{
+		memVal = mem->ReadByte(pointer);
 		break;
+	}
 	case 4:
-		uint8_t oldPointerHigh = pointer >> 8;
+	{
+		uint8_t oldPointerLow = pointer & 0x00FF;
 		pointer += 1;
-		if ((pointer & 0xFF00) >> 8 > oldPointerHigh)
+		if ((pointer & 0x00FF) < oldPointerLow)
 		{
-			pointer -= 0xFF00; // Pointer high byte remains same (page crossings not handled)
+			pointer -= 0x0100; // Pointer high byte remains same (page crossings not handled)
 		}
 		pc = mem->ReadByte(pointer) << 8;
-		pc += tempByte;
+		pc += memVal;
+		instructionFinished = true;
+		break;
+	}
 	}
 }
 
@@ -259,37 +346,59 @@ void CPU::AddressMode_INDIRX()
 	switch (instructionProgress)
 	{
 	case 1:
+	{
 		pointer = mem->ReadByte(pc);
+		curOperand1 = pointer & 0x00FF;
 		IncrementPC();
 		break;
+	}
 	case 2:
-		tempByte = mem->ReadByte(pointer);
+	{
+		memVal = mem->ReadByte(pointer);
 		pointer += x;
+		pointer &= 0x00FF; // no page crossings
 		break;
+	}
 	case 3:
+	{
 		address = mem->ReadByte(pointer);
 		break;
+	}
 	case 4:
-		address += mem->ReadByte(pointer + 1) << 8;
+	{
+		pointer += 1;
+		pointer &= 0x00FF; // no page crossings
+		address += mem->ReadByte(pointer) << 8;
 		break;
+	}
 	case 5:
+	{
+		memVal = mem->ReadByte(address);
 		if (curInstructionType == IT_R || curInstructionType == IT_W)
 		{
 			(this->*instructionJumpTable[curInstructionOpcode])();
+
+			if (curInstructionType == IT_W)
+			{
+				mem->SetByte(address, memVal);
+			}
+
 			instructionFinished = true;
 		}
-		else
-		{
-			tempByte = mem->ReadByte(address);
-		}
 		break;
+	}
 	case 6:
-		mem->SetByte(address, tempByte);
-		break;
-	case 7:
+	{
+		mem->SetByte(address, memVal);
 		(this->*instructionJumpTable[curInstructionOpcode])();
+		break;
+	}
+	case 7:
+	{
+		mem->SetByte(address, memVal);
 		instructionFinished = true;
 		break;
+	}
 	}
 }
 
@@ -298,45 +407,77 @@ void CPU::AddressMode_INDIRY()
 	switch (instructionProgress)
 	{
 	case 1:
+	{
 		pointer = mem->ReadByte(pc);
+		curOperand1 = pointer & 0x00FF;
 		IncrementPC();
 		break;
+	}
 	case 2:
-		tempWord = mem->ReadByte(pointer);
+	{
+		address = mem->ReadByte(pointer);
 		break;
+	}
 	case 3:
-		address = mem->ReadByte(pointer + 1) << 8;
+	{
+		pointer += 1;
+		pointer &= 0x00FF; // no page crossings
+		address += mem->ReadByte(pointer) << 8;
+
+		uint8_t addressLowByte = address & 0x00FF;
+		uint8_t oldAddressLowByte = addressLowByte;
+		addressLowByte += y;
+		address = (address & 0xFF00) | addressLowByte;
+		pageCrossed = (addressLowByte < oldAddressLowByte);
 		break;
+	}
 	case 4:
-		tempByte = mem->ReadByte(address + (tempWord & 0x00FF));
+	{
+		memVal = mem->ReadByte(address);
 		if (curInstructionType == IT_R)
 		{
 			(this->*instructionJumpTable[curInstructionOpcode])();
-			if (tempWord <= 0x00FF)
+			if (!pageCrossed)
 			{
 				// No page crossing
 				instructionFinished = true;
 			}
 		}
-		address += tempWord;
+
+		if (pageCrossed)
+		{
+			address += 0x0100;
+		}
+
 		break;
+	}
 	case 5:
+	{
+		memVal = mem->ReadByte(address);
 		if (curInstructionType == IT_R || curInstructionType == IT_W)
 		{
 			(this->*instructionJumpTable[curInstructionOpcode])();
+
+			if (curInstructionType == IT_W)
+			{
+				mem->SetByte(address, memVal);
+			}
+
 			instructionFinished = true;
 		}
-		else
-		{
-			tempByte = mem->ReadByte(address);
-		}
 		break;
+	}
 	case 6:
-		mem->SetByte(address, tempByte);
-		break;
-	case 7:
+	{
+		mem->SetByte(address, memVal);
 		(this->*instructionJumpTable[curInstructionOpcode])();
+		break;
+	}
+	case 7:
+	{
+		mem->SetByte(address, memVal);
 		instructionFinished = true;
 		break;
+	}
 	}
 }

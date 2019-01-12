@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include "Mapper.h"
 
 class Memory
 {
@@ -8,6 +9,8 @@ public:
 	~Memory();
 
 	void Clear();
+
+	void SetMapper(Mapper* m) { mapper = m; };
 
 	static const int MEMORY_AMOUNT = 0xFFFF;
 	uint8_t memory[MEMORY_AMOUNT];
@@ -21,5 +24,7 @@ public:
 
 private:
 	void InitMemoryMap();
+
+	Mapper* mapper;
 };
 

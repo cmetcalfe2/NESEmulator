@@ -47,7 +47,16 @@ void Memory::InitMemoryMap()
 
 uint8_t Memory::ReadByte(uint16_t addr)
 {
-	return memory[memoryMap[addr]];
+	uint16_t realAddress = memoryMap[addr];
+	if (realAddress >= 0x8000)
+	{
+		// Read from PRG ROM/RAM
+		return mapper->ReadPRGByte(realAddress);
+	}
+	else
+	{
+		return memory[realAddress];
+	}
 }
 
 uint16_t Memory::ReadWord(uint16_t addr)
@@ -57,7 +66,16 @@ uint16_t Memory::ReadWord(uint16_t addr)
 
 void Memory::SetByte(uint16_t addr, uint8_t val)
 {
-	memory[memoryMap[addr]] = val;
+	uint16_t realAddress = memoryMap[addr];
+	if (realAddress >= 0x8000)
+	{
+		// Write to PRG RAM
+		mapper->WritePRGByte(realAddress, val);
+	}
+	else
+	{
+		memory[realAddress] = val;
+	}
 }
 
 void Memory::SetWord(uint16_t addr, uint16_t val)

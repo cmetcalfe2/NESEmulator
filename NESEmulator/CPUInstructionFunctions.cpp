@@ -5,11 +5,10 @@ void CPU::ADC()
 {
 	uint8_t oldVal = a;
 	uint8_t newVal = oldVal;
-	uint8_t val = mem->ReadByte(address);
 	bool overflow = false;
 
 	// Add mem val and c bit seperately, check overflow at each stage
-	newVal += val;
+	newVal += memVal;
 	if (newVal < oldVal)
 		overflow = true;
 
@@ -22,7 +21,7 @@ void CPU::ADC()
 	a = newVal;
 
 	// Update flags
-	UpdateVFlag(IsSignOverflow(oldVal, val, newVal));
+	UpdateVFlag(IsSignOverflow(oldVal, memVal, newVal));
 	UpdateCFlag(overflow);
 	UpdateZNFlags(a);
 }
@@ -30,7 +29,7 @@ void CPU::ADC()
 void CPU::AND()
 {
 	// Perform AND operation
-	a = mem->ReadByte(address) & 0xFF;
+	a &= memVal;
 
 	// Update flags
 	UpdateZNFlags(a);
@@ -38,22 +37,11 @@ void CPU::AND()
 
 void CPU::ASL()
 {
-	uint8_t oldVal;
+	UpdateCFlag(memVal & 0x80);
 
-	if (curAddressMode == AM_ACC)
-		oldVal = a;
-	else
-		oldVal = mem->ReadByte(address);
+	memVal = memVal << 1;
 
-	uint8_t newVal = oldVal << 1;
-
-	if (curAddressMode == AM_ACC)
-		a = newVal;
-	else
-		mem->SetByte(address, newVal);
-
-	UpdateCFlag(oldVal & 0x80);	
-	UpdateZNFlags(newVal);
+	UpdateZNFlags(memVal);
 
 }
 
@@ -74,12 +62,12 @@ void CPU::BEQ()
 
 void CPU::BIT()
 {
-	uint8_t memVal = mem->ReadByte(address);
-	uint8_t val = a & memVal;
-
-	UpdateZFlag(val == 0);
 	UpdateVFlag(memVal & 0x40);
 	UpdateNFlag(memVal & 0x80);
+
+	memVal = a & memVal;
+
+	UpdateZFlag(memVal == 0);
 }
 
 void CPU::BMI()
@@ -113,6 +101,8 @@ void CPU::BRK()
 		DecrementStackPointer();
 		break;
 	case 4:
+		ps.SetB();
+		ps.SetU();
 		mem->SetByte(sp, ps.status);
 		DecrementStackPointer();
 		break;
@@ -163,39 +153,36 @@ void CPU::CLV()
 
 void CPU::CMP()
 {
-	uint8_t memVal = mem->ReadByte(address);
-	uint8_t val = a - memVal;
-
 	UpdateCFlag(a >= memVal);
-	UpdateZNFlags(val);
+
+	memVal = a - memVal;
+
+	UpdateZNFlags(memVal);
 }
 
 void CPU::CPX()
 {
-	uint8_t memVal = mem->ReadByte(address);
-	uint8_t val = x - memVal;
-
 	UpdateCFlag(x >= memVal);
-	UpdateZNFlags(val);
+
+	memVal = x - memVal;
+
+	UpdateZNFlags(memVal);
 }
 
 void CPU::CPY()
 {
-	uint8_t memVal = mem->ReadByte(address);
-	uint8_t val = y - memVal;
-
 	UpdateCFlag(y >= memVal);
-	UpdateZNFlags(val);
+
+	memVal = y - memVal;
+
+	UpdateZNFlags(memVal);
 }
 
 void CPU::DEC()
 {
-	uint8_t oldVal = mem->ReadByte(address);
-	uint8_t newVal = oldVal  - 1;
+	memVal--;
 
-	mem->SetByte(address, newVal);
-
-	UpdateZNFlags(newVal);
+	UpdateZNFlags(memVal);
 }
 
 void CPU::DEX()
@@ -218,19 +205,16 @@ void CPU::DEY()
 
 void CPU::EOR()
 {
-	a = a ^ mem->ReadByte(address);
+	a = a ^ memVal;
 
 	UpdateZNFlags(a);
 }
 
 void CPU::INC()
 {
-	uint8_t oldVal = mem->ReadByte(address);
-	uint8_t newVal = oldVal + 1;
+	memVal++;
 
-	mem->SetByte(address, newVal);
-
-	UpdateZNFlags(newVal);
+	UpdateZNFlags(memVal);
 }
 
 void CPU::INX()
@@ -261,7 +245,7 @@ void CPU::JSR()
 	switch (instructionProgress)
 	{
 	case 1:
-		tempWord = mem->ReadByte(pc);
+		address = mem->ReadByte(pc);
 		IncrementPC();
 		break;
 	case 2:
@@ -276,8 +260,8 @@ void CPU::JSR()
 		DecrementStackPointer();
 		break;
 	case 5:
-		tempWord += mem->ReadByte(pc) << 8;
-		pc = tempWord;
+		address += mem->ReadByte(pc) << 8;
+		pc = address;
 		instructionFinished = true;
 		break;
 	}
@@ -285,43 +269,32 @@ void CPU::JSR()
 
 void CPU::LDA()
 {
-	a = mem->ReadByte(address);
+	a = memVal;
 
 	UpdateZNFlags(a);
 }
 
 void CPU::LDX()
 {
-	x = mem->ReadByte(address);
+	x = memVal;
 
 	UpdateZNFlags(x);
 }
 
 void CPU::LDY()
 {
-	y = mem->ReadByte(address);
+	y = memVal;
 
 	UpdateZNFlags(y);
 }
 
 void CPU::LSR()
 {
-	uint8_t oldVal;
+	UpdateCFlag(memVal & 1);
 
-	if (curAddressMode == AM_ACC)
-		oldVal = a;
-	else
-		oldVal = mem->ReadByte(address);
+	memVal = memVal >> 1;
 
-	uint8_t newVal = oldVal >> 1;
-
-	if (curAddressMode == AM_ACC)
-		mem->SetByte(address, newVal);
-	else
-		a = newVal;
-
-	UpdateCFlag(oldVal & 1);
-	UpdateZNFlags(newVal);
+	UpdateZNFlags(memVal);
 }
 
 void CPU::NOP()
@@ -332,7 +305,9 @@ void CPU::NOP()
 
 void CPU::ORA()
 {
-	a = a | mem->ReadByte(address);
+	a = a | memVal;
+	
+	UpdateZNFlags(a);
 }
 
 void CPU::PHA()
@@ -349,6 +324,8 @@ void CPU::PHP()
 {
 	if (instructionProgress == 2)
 	{
+		ps.SetB();
+		ps.SetU();
 		mem->SetByte(sp, ps.status);
 		DecrementStackPointer();
 		instructionFinished = true;
@@ -361,9 +338,10 @@ void CPU::PLA()
 	{
 		IncrementStackPointer();
 	}
-	else
+	else if (instructionProgress == 3)
 	{
 		a = mem->ReadByte(sp);
+		UpdateZNFlags(a);
 		instructionFinished = true;
 	}
 }
@@ -374,7 +352,7 @@ void CPU::PLP()
 	{
 		IncrementStackPointer();
 	}
-	else
+	else if (instructionProgress == 3)
 	{
 		ps.status = mem->ReadByte(sp);
 		instructionFinished = true;
@@ -383,42 +361,24 @@ void CPU::PLP()
 
 void CPU::ROL()
 {
-	uint8_t oldVal;
+	uint8_t oldCarryFlag = ps.C();
 
-	if (curAddressMode == AM_ACC)
-		oldVal = a;
-	else
-		oldVal = mem->ReadByte(address);
+	UpdateCFlag(memVal & 0x80);
 
-	uint8_t newVal = (oldVal << 1) | ps.C();
+	memVal = (memVal << 1) | oldCarryFlag;
 
-	if (curAddressMode == AM_ACC)
-		a = newVal;
-	else
-		mem->SetByte(address, newVal);
-
-	UpdateCFlag(oldVal & 0x80);
-	UpdateZNFlags(newVal);
+	UpdateZNFlags(memVal);
 }
 
 void CPU::ROR()
 {
-	uint8_t oldVal;
+	uint8_t oldCarryFlag = ps.C();
 
-	if (curAddressMode == AM_ACC)
-		oldVal = a;
-	else
-		oldVal = mem->ReadByte(address);
+	UpdateCFlag(memVal & 1);
 
-	uint8_t newVal = (oldVal >> 1) | (ps.C() << 7);
+	memVal = (memVal >> 1) | (oldCarryFlag << 7);
 
-	if (curAddressMode == AM_ACC)
-		a = newVal;
-	else
-		mem->SetByte(address, newVal);
-
-	UpdateCFlag(oldVal & 1);
-	UpdateZNFlags(newVal);
+	UpdateZNFlags(memVal);
 }
 
 void CPU::RTI()
@@ -468,11 +428,11 @@ void CPU::SBC()
 {
 	uint8_t oldVal = a;
 	uint8_t newVal = oldVal;
-	uint8_t val = ~mem->ReadByte(address);
+	memVal = ~memVal;
 	bool overflow = false;
 
 	// Add mem val and c bit seperately, check overflow at each stage
-	newVal += val;
+	newVal += memVal;
 	if (newVal < oldVal)
 		overflow = true;
 
@@ -485,7 +445,7 @@ void CPU::SBC()
 	a = newVal;
 
 	// Update flags
-	UpdateVFlag(IsSignOverflow(oldVal, val, newVal));
+	UpdateVFlag(IsSignOverflow(oldVal, memVal, newVal));
 	UpdateCFlag(overflow);
 	UpdateZNFlags(a);
 }
@@ -513,17 +473,17 @@ void CPU::SEI()
 
 void CPU::STA()
 {
-	mem->SetByte(address, a);
+	memVal = a;
 }
 
 void CPU::STX()
 {
-	mem->SetByte(address, x);
+	memVal = x;
 }
 
 void CPU::STY()
 {
-	mem->SetByte(address, y);
+	memVal = y;
 }
 
 void CPU::TAX()
@@ -544,7 +504,7 @@ void CPU::TAY()
 
 void CPU::TSX()
 {
-	x = sp;
+	x = RealStackPointer();
 	UpdateZNFlags(x);
 
 	instructionFinished = true;
@@ -560,7 +520,7 @@ void CPU::TXA()
 
 void CPU::TXS()
 {
-	sp = x;
+	SetRealStackPointer(x);
 
 	instructionFinished = true;
 }

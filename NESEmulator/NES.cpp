@@ -16,6 +16,12 @@ NES::~NES()
 
 	delete memory;
 	memory = NULL;
+
+	if (mapper != NULL)
+	{
+		delete mapper;
+		mapper = NULL;
+	}
 }
 
 
@@ -46,29 +52,22 @@ bool NES::LoadROM(std::string path)
 			return false;
 		}
 
-		uint8_t prgBanks = input.get();
-		uint8_t chrBanks = input.get();
+		uint8_t numPRGBanks = input.get();
+		uint8_t numCHRBanks = input.get();
 
 		uint8_t controlByte1 = input.get();
 		uint8_t controlByte2 = input.get();
+
+		uint8_t mapperNumber = (controlByte1 & 0x0F) + ((controlByte2 & 0x0F) << 4);
+		SetMapper(mapperNumber);
 
 		// Check control byte stuff here
 
 		// End control byte checking
 
+		// Load PRG ROM
 		input.seekg(16, std::ios::beg);
-		for (unsigned int i = 0; i < 16384; i++)
-		{
-			// Start loading program to memory location 0x8000
-			memory->SetByte(0x8000 + i, input.get());
-		}
-
-		input.seekg(16, std::ios::beg);
-		for (unsigned int i = (prgBanks - 1) * 16384; i < 16384; i++)
-		{
-			// Start loading program to memory location 0xC000
-			memory->SetByte(0xC000 + i, input.get());
-		}
+		mapper->LoadPRGROM(input, numPRGBanks);
 
 		processor->Reset();
 
@@ -79,6 +78,18 @@ bool NES::LoadROM(std::string path)
 		printf("Failed to load program - %s\n", path.c_str());
 		return false;
 	}
+}
+
+void NES::SetMapper(uint8_t mapperNumber)
+{
+	switch (mapperNumber)
+	{
+	case 1:
+		mapper = new MapperMMC1();
+		break;
+	}
+
+	memory->SetMapper(mapper);
 }
 
 void NES::Cycle()
