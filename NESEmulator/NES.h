@@ -1,5 +1,6 @@
 #pragma once
 #include "CPU.h"
+#include "PPU.h"
 #include "Memory.h"
 #include "AllMappers.h"
 #include <string>
@@ -17,8 +18,10 @@ public:
 	void Cycle();
 
 	CPU* processor;
+	PPU* ppu;
 	Memory* memory;
 	Mapper* mapper;
+	Interrupts* interrupts;
 
 private:
 	void SetMapper(uint8_t mapperNum);

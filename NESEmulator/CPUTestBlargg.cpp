@@ -20,6 +20,11 @@ void CPUTestBlargg::PostCycle()
 
 		if (status != 0x80)
 		{
+			if (!testRunning)
+			{
+				return;
+			}
+
 			//finishExecuting = true;
 			// Test finished
 			char textBuffer[2048];
@@ -37,6 +42,10 @@ void CPUTestBlargg::PostCycle()
 			}
 
 			//printf("%02X %s\n", status, textBuffer);
+		}
+		else
+		{
+			testRunning = true;
 		}
 	}
 }

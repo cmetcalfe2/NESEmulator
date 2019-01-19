@@ -1,5 +1,6 @@
 #include "Memory.h"
-
+#include "PPU.h"
+#include <stdint.h>
 
 
 Memory::Memory()
@@ -48,7 +49,13 @@ void Memory::InitMemoryMap()
 uint8_t Memory::ReadByte(uint16_t addr)
 {
 	uint16_t realAddress = memoryMap[addr];
-	if (realAddress >= 0x8000)
+
+	if ((realAddress >= 0x2000 && realAddress <= 0x2007) || (realAddress >= 0x4000 && realAddress <= 0x401F))
+	{
+		// IO register
+		return ReadIORegister(addr);
+	}	
+	else if (realAddress >= 0x8000)
 	{
 		// Read from PRG ROM/RAM
 		return mapper->ReadPRGByte(realAddress);
@@ -56,6 +63,25 @@ uint8_t Memory::ReadByte(uint16_t addr)
 	else
 	{
 		return memory[realAddress];
+	}
+}
+
+uint8_t Memory::ReadIORegister(uint16_t addr)
+{
+	switch (addr)
+	{
+	case 0x2002:
+		// PPUSTATUS
+		break;
+	case 0x2004:
+		// OAMDATA
+		break;
+	case 0x2007:
+		// PPUDATA
+		break;
+	default:
+		return 0x0000;
+		break;
 	}
 }
 
@@ -67,7 +93,13 @@ uint16_t Memory::ReadWord(uint16_t addr)
 void Memory::SetByte(uint16_t addr, uint8_t val)
 {
 	uint16_t realAddress = memoryMap[addr];
-	if (realAddress >= 0x8000)
+
+	if ((realAddress >= 0x2000 && realAddress <= 0x2007) || (realAddress >= 0x4000 && realAddress <= 0x401F))
+	{
+		// IO register
+		
+	}
+	else if (realAddress >= 0x8000)
 	{
 		// Write to PRG RAM
 		mapper->WritePRGByte(realAddress, val);
@@ -75,6 +107,36 @@ void Memory::SetByte(uint16_t addr, uint8_t val)
 	else
 	{
 		memory[realAddress] = val;
+	}
+}
+
+void Memory::SetIORegister(uint16_t addr, uint8_t val)
+{
+	switch (addr)
+	{
+	case 0x2000:
+		// PPUCTRL
+		break;
+	case 0x2001:
+		// PPUMASK
+		break;
+	case 0x2003:
+		// OAMADDR
+		break;
+	case 0x2004:
+		// OAMDATA
+		break;
+	case 0x2005:
+		// PPUSCROL
+		break;
+	case 0x2006:
+		// PPUADDR
+		break;
+	case 0x2007:
+		// PPUDATA
+	case 0x4014:
+		// OAMDMA
+		break;
 	}
 }
 

@@ -90,28 +90,76 @@ void CPU::BRK()
 	switch (instructionProgress)
 	{
 	case 1:
-		IncrementPC();
+		interrupts->InterruptHijacking(interruptBeingHandled);
+		if (interruptBeingHandled == INTERRUPT_BRK)
+		{
+			IncrementPC();
+		}
 		break;
 	case 2:
-		mem->SetByte(sp, (pc & 0xFF00) >> 8);
+		interrupts->InterruptHijacking(interruptBeingHandled);
+		if (interruptBeingHandled != INTERRUPT_RST)
+		{
+			// Stack writes suppressed on reset
+			mem->SetByte(sp, (pc & 0xFF00) >> 8);
+		}
 		DecrementStackPointer();
 		break;
 	case 3:
-		mem->SetByte(sp, (pc & 0x00FF));
+		interrupts->InterruptHijacking(interruptBeingHandled);
+		if (interruptBeingHandled != INTERRUPT_RST)
+		{
+			// Stack writes suppressed on reset
+			mem->SetByte(sp, (pc & 0x00FF));
+		}
 		DecrementStackPointer();
 		break;
 	case 4:
-		ps.SetB();
+		interrupts->InterruptHijacking(interruptBeingHandled);
+		if (interruptBeingHandled == INTERRUPT_BRK)
+		{
+			ps.SetB();
+		}
 		ps.SetU();
-		mem->SetByte(sp, ps.status);
+		if (interruptBeingHandled != INTERRUPT_RST)
+		{
+			// Stack writes suppressed on reset
+			mem->SetByte(sp, ps.status);
+		}
 		DecrementStackPointer();
 		break;
 	case 5:
-		ps.SetB();
-		pc = mem->ReadByte(0xFFFE);
+		interrupts->InterruptHijacking(interruptBeingHandled);
+		ps.SetI();
+		if (interruptBeingHandled == INTERRUPT_BRK || interruptBeingHandled == INTERRUPT_IRQ)
+		{
+			pc = mem->ReadByte(0xFFFE);
+		}
+		else if (interruptBeingHandled == INTERRUPT_NMI)
+		{
+			pc = mem->ReadByte(0xFFFA);
+		}
+		else
+		{
+			pc = mem->ReadByte(0xFFFC);
+		}
+
 		break;
 	case 6:
-		pc += mem->ReadByte(0xFFFF) << 8;
+		if (interruptBeingHandled == INTERRUPT_BRK || interruptBeingHandled == INTERRUPT_IRQ)
+		{
+			pc += mem->ReadByte(0xFFFF) << 8;
+		}
+		else if (interruptBeingHandled == INTERRUPT_NMI)
+		{
+			pc += mem->ReadByte(0xFFFB) << 8;
+		}
+		else
+		{
+			pc += mem->ReadByte(0xFFFD) << 8;
+		}
+		
+		interruptBeingHandled = INTERRUPT_NONE;
 		instructionFinished = true;
 		break;
 	}
@@ -129,24 +177,28 @@ void CPU::BVS()
 
 void CPU::CLC()
 {
+	PollInterrupts();
 	UpdateCFlag(false);
 	instructionFinished = true;
 }
 
 void CPU::CLD()
 {
+	PollInterrupts();
 	UpdateDFlag(false);
 	instructionFinished = true;
 }
 
 void CPU::CLI()
 {
+	PollInterrupts();
 	UpdateIFlag(false);
 	instructionFinished = true;
 }
 
 void CPU::CLV()
 {
+	PollInterrupts();
 	UpdateVFlag(false);
 	instructionFinished = true;
 }
@@ -187,6 +239,8 @@ void CPU::DEC()
 
 void CPU::DEX()
 {
+	PollInterrupts();
+
 	x--;
 
 	UpdateZNFlags(x);
@@ -196,6 +250,8 @@ void CPU::DEX()
 
 void CPU::DEY()
 {
+	PollInterrupts();
+
 	y--;
 
 	UpdateZNFlags(y);
@@ -219,6 +275,8 @@ void CPU::INC()
 
 void CPU::INX()
 {
+	PollInterrupts();
+
 	x++;
 
 	UpdateZNFlags(x);
@@ -228,6 +286,8 @@ void CPU::INX()
 
 void CPU::INY()
 {
+	PollInterrupts();
+
 	y++;
 
 	UpdateZNFlags(y);
@@ -260,6 +320,7 @@ void CPU::JSR()
 		DecrementStackPointer();
 		break;
 	case 5:
+		PollInterrupts();
 		address += mem->ReadByte(pc) << 8;
 		pc = address;
 		instructionFinished = true;
@@ -300,6 +361,7 @@ void CPU::LSR()
 void CPU::NOP()
 {
 	// Do nothing
+	PollInterrupts();
 	instructionFinished = true;
 }
 
@@ -314,6 +376,7 @@ void CPU::PHA()
 {
 	if (instructionProgress == 2)
 	{
+		PollInterrupts();
 		mem->SetByte(sp, a);
 		DecrementStackPointer();
 		instructionFinished = true;
@@ -324,6 +387,7 @@ void CPU::PHP()
 {
 	if (instructionProgress == 2)
 	{
+		PollInterrupts();
 		ps.SetB();
 		ps.SetU();
 		mem->SetByte(sp, ps.status);
@@ -340,6 +404,7 @@ void CPU::PLA()
 	}
 	else if (instructionProgress == 3)
 	{
+		PollInterrupts();
 		a = mem->ReadByte(sp);
 		UpdateZNFlags(a);
 		instructionFinished = true;
@@ -354,6 +419,7 @@ void CPU::PLP()
 	}
 	else if (instructionProgress == 3)
 	{
+		PollInterrupts();
 		ps.status = mem->ReadByte(sp);
 		instructionFinished = true;
 	}
@@ -397,6 +463,7 @@ void CPU::RTI()
 		IncrementStackPointer();
 		break;
 	case 5:
+		PollInterrupts();
 		pc += mem->ReadByte(sp) << 8;
 		instructionFinished = true;
 		break;
@@ -418,6 +485,7 @@ void CPU::RTS()
 		pc += mem->ReadByte(sp) << 8;
 		break;
 	case 5:
+		PollInterrupts();
 		IncrementPC();
 		instructionFinished = true;
 		break;
@@ -452,6 +520,8 @@ void CPU::SBC()
 
 void CPU::SEC()
 {
+	PollInterrupts();
+
 	UpdateCFlag(true);
 
 	instructionFinished = true;
@@ -459,6 +529,8 @@ void CPU::SEC()
 
 void CPU::SED()
 {
+	PollInterrupts();
+
 	UpdateDFlag(true);
 
 	instructionFinished = true;
@@ -466,6 +538,8 @@ void CPU::SED()
 
 void CPU::SEI()
 {
+	PollInterrupts();
+
 	UpdateIFlag(true);
 
 	instructionFinished = true;
@@ -488,6 +562,8 @@ void CPU::STY()
 
 void CPU::TAX()
 {
+	PollInterrupts();
+
 	x = a;
 	UpdateZNFlags(x);
 
@@ -496,6 +572,8 @@ void CPU::TAX()
 
 void CPU::TAY()
 {
+	PollInterrupts();
+
 	y = a;
 	UpdateZNFlags(y);
 
@@ -504,6 +582,8 @@ void CPU::TAY()
 
 void CPU::TSX()
 {
+	PollInterrupts();
+
 	x = RealStackPointer();
 	UpdateZNFlags(x);
 
@@ -512,6 +592,8 @@ void CPU::TSX()
 
 void CPU::TXA()
 {
+	PollInterrupts();
+
 	a = x;
 	UpdateZNFlags(a);
 
@@ -520,6 +602,8 @@ void CPU::TXA()
 
 void CPU::TXS()
 {
+	PollInterrupts();
+
 	SetRealStackPointer(x);
 
 	instructionFinished = true;
@@ -527,6 +611,8 @@ void CPU::TXS()
 
 void CPU::TYA()
 {
+	PollInterrupts();
+
 	a = y;
 	UpdateZNFlags(a);
 

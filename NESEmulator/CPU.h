@@ -2,6 +2,8 @@
 #include "CPUInstructions.h"
 #include "Memory.h"
 #include "Logger.h"
+#include "Mapper.h"
+#include "Interrupts.h"
 #include <iostream>
 #include <ctime>
 #include <vector>
@@ -52,11 +54,15 @@ public:
 class CPU
 {
 public:
-	CPU(Memory* memory);
+	CPU(Memory* memory, Interrupts* interrupts);
 	~CPU();
 
-	void Reset();
+	void Init();
 	void Cycle();
+
+	void OnReset();
+
+	void SetMapper(Mapper* mapper);
 
 	bool IsInstructionFinished() { return instructionFinished; }
 	unsigned long GetCyclesElapsed() { return cyclesElapsed; }
@@ -164,6 +170,12 @@ private:
 	uint8_t RealStackPointer() { return (sp - 0x0100) & 0x00FF; };
 	void SetRealStackPointer(uint8_t val) { sp = val + 0x0100; };
 
+	// Interrupt polling
+	void PollInterrupts();
+
+	// Mapper
+	Mapper* mapper;
+
 	// Registers
 	uint16_t pc;
 	uint16_t sp;
@@ -180,6 +192,12 @@ private:
 	uint8_t memVal = 0x00;
 	bool branchTaken = false;
 	bool pageCrossed = false;
+
+	// Interrupts
+	Interrupts* interrupts;
+	InterruptType pendingInterrupt = INTERRUPT_NONE;
+	//InterruptType lastPendingInterrupt = INTERRUPT_NONE;
+	InterruptType interruptBeingHandled = INTERRUPT_NONE;
 
 	// Instruction tables
 	std::map<Instruction, InstructionFunction> instructionFunctions = {

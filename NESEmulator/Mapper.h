@@ -3,13 +3,16 @@
 #include <vector>
 #include <fstream>
 
+class PPU;
+
 class Mapper
 {
 public:
-	Mapper();
+	Mapper(PPU* ppu);
 	~Mapper();
 
 	void LoadPRGROM(std::ifstream& inputStream, uint8_t numBanks); // Loads PRG ROM, caller should check that stream pointer is at beginning of PRG ROM
+	virtual void OnRPRGROMLoaded() {};
 
 	virtual void WritePRGByte(uint32_t address, uint8_t val);
 	virtual uint8_t ReadPRGByte(uint32_t address);
@@ -22,7 +25,10 @@ protected:
 	std::vector<uint8_t> prgRom;
 	std::vector<uint8_t> chrRom;
 
+	uint8_t numPRGBanks = 0;
 	uint32_t prgBankOffset1; // Address of PRG ROM accessed via $8000-$BFFF
 	uint32_t prgBankOffset2; // Address of PRG ROM accessed via
+
+	PPU* ppu;
 };
 

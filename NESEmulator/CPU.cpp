@@ -2,9 +2,10 @@
 
 
 
-CPU::CPU(Memory* memory)
+CPU::CPU(Memory* memory, Interrupts* i)
 {
 	mem = memory;
+	interrupts = i;
 	InitialiseInstructionTables();
 }
 
@@ -12,18 +13,27 @@ CPU::CPU(Memory* memory)
 CPU::~CPU()
 {
 	mem = NULL;
+	interrupts = NULL;
 }
 
-void CPU::Reset()
+void CPU::Init()
 {
 	InitialiseRegisters();
 	instructionFinished = true;
 	startTime = std::clock();
+	OnReset();
+}
+
+void CPU::OnReset()
+{
+	pendingInterrupt = INTERRUPT_RST;
+	mem->SetByte(0x4015, 0); // APU Silenced on reset
 }
 
 void CPU::InitialiseRegisters()
 {
-	pc = (mem->ReadByte(0xFFFD) << 8) + mem->ReadByte(0xFFFC);
+	//pc = (mem->ReadByte(0xFFFD) << 8) + mem->ReadByte(0xFFFC);
+	pc = 0;
 	/*if (pc == 0 || pc == 0xFFFF)
 	{
 		pc = 0x8000;
@@ -133,6 +143,27 @@ void CPU::InitialiseInstructionTables()
 	}
 }
 
+void CPU::SetMapper(Mapper* m)
+{
+	mapper = m;
+}
+
+void CPU::PollInterrupts()
+{
+	if ((pendingInterrupt == INTERRUPT_NONE) || (pendingInterrupt == INTERRUPT_IRQ)) // Only pending IRQ interrupts can be overridden (by NMI)
+	{
+		InterruptType interruptType = interrupts->PollEdgeDetectors();
+		if (interruptType == INTERRUPT_RST)
+		{
+			OnReset();
+		}
+		else if (((interruptType == INTERRUPT_IRQ) && (ps.I() == 0)) || (interruptType == INTERRUPT_NMI))
+		{
+			pendingInterrupt == interruptType;
+		}
+	}
+}
+
 void CPU::Cycle()
 {
 	if (instructionFinished)
@@ -141,13 +172,38 @@ void CPU::Cycle()
 
 		// Fetch opcode of next instruction
 		instructionProgress = 0;
+
 		curInstructionPC = pc;
-		curInstructionOpcode = mem->ReadByte(pc);
+
+		if (pendingInterrupt == INTERRUPT_NONE)
+		{
+			curInstructionOpcode = mem->ReadByte(pc);
+			IncrementPC();
+
+			if (curInstructionOpcode == 0x00)
+			{
+				// BRK interrupt
+				interruptBeingHandled = INTERRUPT_BRK;
+			}
+		}
+		else
+		{
+			// Handle interrupt
+			interruptBeingHandled = pendingInterrupt;
+			pendingInterrupt = INTERRUPT_NONE;
+			curInstructionOpcode = 0x00; // BRK
+		}
+
 		curInstructionNameString = instructionNameStringTable[curInstructionOpcode];
-		callHistory.push_back(InstructionInfo::instructions[curInstructionOpcode]);
+
 		curAddressMode = InstructionInfo::instructionAddressingModes[curInstructionOpcode];
+
 		curInstructionType = instructionTypeTable[curInstructionOpcode];
-		IncrementPC();
+
+		callHistory.push_back(InstructionInfo::instructions[curInstructionOpcode]);
+
+		mapper->OnInstructionFinished();
+
 		instructionFinished = false;
 	}
 	else
@@ -161,7 +217,7 @@ void CPU::Cycle()
 	// Timing
 	if ((std::clock() - startTime) >= CLOCKS_PER_SEC)
 	{
-		printf("Cycles per second - %fM\n", (double)cyclesThisSecond / 1000000.0);
+		//printf("Cycles per second - %fM\n", (double)cyclesThisSecond / 1000000.0);
 		cyclesThisSecond = 0;
 		startTime = std::clock();
 	}

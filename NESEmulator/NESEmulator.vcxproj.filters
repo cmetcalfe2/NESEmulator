@@ -67,6 +67,15 @@
       <Filter>Source Files\ROM Tests</Filter>
     </ClCompile>
     <ClCompile Include="MapperMMC1.cpp">
+      <Filter>Source Files\Mappers</Filter>
+    </ClCompile>
+    <ClCompile Include="PPU.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MapperNROM.cpp">
+      <Filter>Source Files\Mappers</Filter>
+    </ClCompile>
+    <ClCompile Include="Interrupts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -95,11 +104,20 @@
     <ClInclude Include="CPUTestBlargg.h">
       <Filter>Header Files\ROM Tests</Filter>
     </ClInclude>
-    <ClInclude Include="MapperMMC1.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="AllMappers.h">
       <Filter>Header Files\Mappers</Filter>
+    </ClInclude>
+    <ClInclude Include="MapperMMC1.h">
+      <Filter>Header Files\Mappers</Filter>
+    </ClInclude>
+    <ClInclude Include="PPU.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MapperNROM.h">
+      <Filter>Header Files\Mappers</Filter>
+    </ClInclude>
+    <ClInclude Include="Interrupts.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

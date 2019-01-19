@@ -1,6 +1,9 @@
 #pragma once
-#include <stdint.h>
+
 #include "Mapper.h"
+
+
+class PPU;
 
 class Memory
 {
@@ -11,6 +14,7 @@ public:
 	void Clear();
 
 	void SetMapper(Mapper* m) { mapper = m; };
+	void SetPPU(PPU* p) { ppu = p; };
 
 	static const int MEMORY_AMOUNT = 0xFFFF;
 	uint8_t memory[MEMORY_AMOUNT];
@@ -22,9 +26,13 @@ public:
 	void SetByte(uint16_t addr, uint8_t val);
 	void SetWord(uint16_t addr, uint16_t val);
 
+	uint8_t ReadIORegister(uint16_t addr);
+	void SetIORegister(uint16_t addr, uint8_t val);
+
 private:
 	void InitMemoryMap();
 
 	Mapper* mapper;
+	PPU* ppu;
 };
 

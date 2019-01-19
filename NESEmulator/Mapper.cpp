@@ -1,9 +1,10 @@
 #include "Mapper.h"
+#include "PPU.h"
 
-
-
-Mapper::Mapper()
+Mapper::Mapper(PPU* p)
 {
+	ppu = p;
+	ppu->Cycle();
 }
 
 
@@ -18,7 +19,7 @@ void Mapper::LoadPRGROM(std::ifstream& inputStream, uint8_t numBanks)
 	{
 		prgRom[i] = inputStream.get();
 	}
-	int breakTest = 0;
+	OnRPRGROMLoaded();
 }
 
 void Mapper::WritePRGByte(uint32_t address, uint8_t val)
@@ -28,12 +29,12 @@ void Mapper::WritePRGByte(uint32_t address, uint8_t val)
 
 uint8_t Mapper::ReadPRGByte(uint32_t address)
 {
-	uint32_t bankOffset = (address < 0xC000) ? prgBankOffset1 : prgBankOffset2;
+	uint32_t bankOffset = (address < 0xC000) ? prgBankOffset1 : prgBankOffset2 - 0x4000;
 	return prgRom[address - 0x8000 + bankOffset];
 }
 
 void Mapper::SetPRGByte(uint32_t address, uint8_t val)
 {
-	uint32_t bankOffset = (address < 0xC000) ? prgBankOffset1 : prgBankOffset2;
+	uint32_t bankOffset = (address < 0xC000) ? prgBankOffset1 : prgBankOffset2 - 0x4000;
 	prgRom[address - 0x8000 + bankOffset] = val;
 }

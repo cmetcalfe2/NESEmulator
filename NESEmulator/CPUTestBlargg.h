@@ -9,5 +9,7 @@ public:
 
 protected:
 	void PostCycle() override;
+
+	bool testRunning = false;
 };
 

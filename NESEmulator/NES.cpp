@@ -5,7 +5,11 @@
 NES::NES()
 {
 	memory = new Memory();
-	processor = new CPU(memory);
+	interrupts = new Interrupts();
+	processor = new CPU(memory, interrupts);
+	ppu = new PPU(memory);
+
+	memory->SetPPU(ppu);
 }
 
 
@@ -13,6 +17,9 @@ NES::~NES()
 {
 	delete processor;
 	processor = NULL;
+
+	delete ppu;
+	ppu = NULL;
 
 	delete memory;
 	memory = NULL;
@@ -22,6 +29,9 @@ NES::~NES()
 		delete mapper;
 		mapper = NULL;
 	}
+
+	delete interrupts;
+	interrupts = NULL;
 }
 
 
@@ -69,7 +79,7 @@ bool NES::LoadROM(std::string path)
 		input.seekg(16, std::ios::beg);
 		mapper->LoadPRGROM(input, numPRGBanks);
 
-		processor->Reset();
+		processor->OnReset();
 
 		return true;
 	}
@@ -84,15 +94,21 @@ void NES::SetMapper(uint8_t mapperNumber)
 {
 	switch (mapperNumber)
 	{
+	case 0:
+		mapper = new MapperNROM(ppu);
+		break;
 	case 1:
-		mapper = new MapperMMC1();
+		mapper = new MapperMMC1(ppu);
 		break;
 	}
 
+	processor->SetMapper(mapper);
+	ppu->SetMapper(mapper);
 	memory->SetMapper(mapper);
 }
 
 void NES::Cycle()
 {
 	processor->Cycle();
+	interrupts->PollInterruptLines();
 }

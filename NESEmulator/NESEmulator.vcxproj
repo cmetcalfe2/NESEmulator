@@ -116,12 +116,15 @@
     <ClCompile Include="CPUInstructionFunctions.cpp" />
     <ClCompile Include="CPUInstructions.cpp" />
     <ClCompile Include="CPUTestBlargg.cpp" />
+    <ClCompile Include="Interrupts.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mapper.cpp" />
     <ClCompile Include="MapperMMC1.cpp" />
+    <ClCompile Include="MapperNROM.cpp" />
     <ClCompile Include="Memory.cpp" />
     <ClCompile Include="NES.cpp" />
+    <ClCompile Include="PPU.cpp" />
     <ClCompile Include="ROMTest.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -129,11 +132,14 @@
     <ClInclude Include="CPU.h" />
     <ClInclude Include="CPUInstructions.h" />
     <ClInclude Include="CPUTestBlargg.h" />
+    <ClInclude Include="Interrupts.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="Mapper.h" />
     <ClInclude Include="MapperMMC1.h" />
+    <ClInclude Include="MapperNROM.h" />
     <ClInclude Include="Memory.h" />
     <ClInclude Include="NES.h" />
+    <ClInclude Include="PPU.h" />
     <ClInclude Include="ROMTest.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
