@@ -7,6 +7,7 @@ public:
 	MapperNROM(PPU* ppu);
 	~MapperNROM();
 
-	void OnRPRGROMLoaded() override;
+	void OnPRGROMLoaded() override;
+	void OnCHRROMLoaded() override;
 };
 

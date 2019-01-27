@@ -31,6 +31,12 @@
     <Filter Include="Source Files\Mappers">
       <UniqueIdentifier>{2dfd018a-caba-420d-aba1-c74a4138af67}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\PPU">
+      <UniqueIdentifier>{6eff250d-7f28-4a0e-a160-6b574ef38d60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PPU">
+      <UniqueIdentifier>{9c8029c4-f61e-4c18-97fa-5c935789608e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -69,13 +75,28 @@
     <ClCompile Include="MapperMMC1.cpp">
       <Filter>Source Files\Mappers</Filter>
     </ClCompile>
-    <ClCompile Include="PPU.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="MapperNROM.cpp">
       <Filter>Source Files\Mappers</Filter>
     </ClCompile>
     <ClCompile Include="Interrupts.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PPU.cpp">
+      <Filter>Source Files\PPU</Filter>
+    </ClCompile>
+    <ClCompile Include="PPURegisterFunctions.cpp">
+      <Filter>Source Files\PPU</Filter>
+    </ClCompile>
+    <ClCompile Include="PPUCycleFunctions.cpp">
+      <Filter>Source Files\PPU</Filter>
+    </ClCompile>
+    <ClCompile Include="Emulator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderTexture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -110,13 +131,22 @@
     <ClInclude Include="MapperMMC1.h">
       <Filter>Header Files\Mappers</Filter>
     </ClInclude>
-    <ClInclude Include="PPU.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MapperNROM.h">
       <Filter>Header Files\Mappers</Filter>
     </ClInclude>
     <ClInclude Include="Interrupts.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PPU.h">
+      <Filter>Header Files\PPU</Filter>
+    </ClInclude>
+    <ClInclude Include="Emulator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderTexture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

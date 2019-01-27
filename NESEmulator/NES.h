@@ -15,6 +15,7 @@ public:
 
 	bool LoadROM(std::string path);
 
+	void RunOneFrame();
 	void Cycle();
 
 	CPU* processor;
@@ -25,6 +26,9 @@ public:
 
 private:
 	void SetMapper(uint8_t mapperNum);
+
+	const uint32_t cpuCyclesPerFrame = 1789773 / 60;
+	const int ppuCyclesPerCPUCycle = 3;
 
 };
 

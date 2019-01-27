@@ -72,12 +72,15 @@ uint8_t Memory::ReadIORegister(uint16_t addr)
 	{
 	case 0x2002:
 		// PPUSTATUS
+		return ppu->ReadPPUSTATUS();
 		break;
 	case 0x2004:
 		// OAMDATA
+		return ppu->ReadOAMDATA();
 		break;
 	case 0x2007:
 		// PPUDATA
+		return ppu->ReadPPUDATA();
 		break;
 	default:
 		return 0x0000;
@@ -97,7 +100,7 @@ void Memory::SetByte(uint16_t addr, uint8_t val)
 	if ((realAddress >= 0x2000 && realAddress <= 0x2007) || (realAddress >= 0x4000 && realAddress <= 0x401F))
 	{
 		// IO register
-		
+		SetIORegister(addr, val);
 	}
 	else if (realAddress >= 0x8000)
 	{
@@ -116,26 +119,37 @@ void Memory::SetIORegister(uint16_t addr, uint8_t val)
 	{
 	case 0x2000:
 		// PPUCTRL
+		ppu->SetPPUCTRL(val);
 		break;
 	case 0x2001:
 		// PPUMASK
+		ppu->SetPPUMASK(val);
 		break;
 	case 0x2003:
 		// OAMADDR
+		ppu->SetOAMADDR(val);
 		break;
 	case 0x2004:
 		// OAMDATA
+		ppu->SetOAMDATA(val);
 		break;
 	case 0x2005:
-		// PPUSCROL
+		// PPUSCROLL
+		ppu->SetPPUSCROLL(val);
 		break;
 	case 0x2006:
 		// PPUADDR
+		ppu->SetPPUADDR(val);
 		break;
 	case 0x2007:
 		// PPUDATA
+		ppu->SetPPUDATA(val);
+		break;
 	case 0x4014:
 		// OAMDMA
+		ppuOAMDMAActive = true;
+		curPPUOAMDMACycle = 0;
+		ppuOAMDMAAddr = ((uint16_t)val << 8);
 		break;
 	}
 }
@@ -144,4 +158,26 @@ void Memory::SetWord(uint16_t addr, uint16_t val)
 {
 	SetByte(addr, val & 0xFF);
 	SetByte(addr + 1, (val >> 8));
+}
+
+void Memory::PPUOAMDMACycle()
+{
+	if (curPPUOAMDMACycle > 1)
+	{
+		if ((curPPUOAMDMACycle % 2) != 0)
+		{
+			ppuOAMDMAByte = ReadByte(ppuOAMDMAAddr);
+			ppuOAMDMAAddr++;
+		}
+		else
+		{
+			ppu->SetOAMByte(ppuOAMDMAByte);
+		}
+	}
+	curPPUOAMDMACycle++;
+
+	if (curPPUOAMDMACycle == 514)
+	{
+		ppuOAMDMAActive = false;
+	}
 }

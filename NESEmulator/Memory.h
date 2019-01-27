@@ -29,10 +29,17 @@ public:
 	uint8_t ReadIORegister(uint16_t addr);
 	void SetIORegister(uint16_t addr, uint8_t val);
 
+	void PPUOAMDMACycle();
+	bool ppuOAMDMAActive = false;
+
 private:
 	void InitMemoryMap();
 
 	Mapper* mapper;
 	PPU* ppu;
+
+	uint16_t ppuOAMDMAAddr = 0x0000;
+	int curPPUOAMDMACycle = 0;
+	uint8_t ppuOAMDMAByte = 0x00;
 };
 

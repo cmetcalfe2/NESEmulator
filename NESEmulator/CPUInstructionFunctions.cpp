@@ -148,15 +148,15 @@ void CPU::BRK()
 	case 6:
 		if (interruptBeingHandled == INTERRUPT_BRK || interruptBeingHandled == INTERRUPT_IRQ)
 		{
-			pc += mem->ReadByte(0xFFFF) << 8;
+			pc += (uint16_t)mem->ReadByte(0xFFFF) << 8;
 		}
 		else if (interruptBeingHandled == INTERRUPT_NMI)
 		{
-			pc += mem->ReadByte(0xFFFB) << 8;
+			pc += (uint16_t)mem->ReadByte(0xFFFB) << 8;
 		}
 		else
 		{
-			pc += mem->ReadByte(0xFFFD) << 8;
+			pc += (uint16_t)mem->ReadByte(0xFFFD) << 8;
 		}
 		
 		interruptBeingHandled = INTERRUPT_NONE;
@@ -321,7 +321,7 @@ void CPU::JSR()
 		break;
 	case 5:
 		PollInterrupts();
-		address += mem->ReadByte(pc) << 8;
+		address += (uint16_t)mem->ReadByte(pc) << 8;
 		pc = address;
 		instructionFinished = true;
 		break;
@@ -464,7 +464,7 @@ void CPU::RTI()
 		break;
 	case 5:
 		PollInterrupts();
-		pc += mem->ReadByte(sp) << 8;
+		pc += (uint16_t)mem->ReadByte(sp) << 8;
 		instructionFinished = true;
 		break;
 	}
@@ -482,7 +482,7 @@ void CPU::RTS()
 		IncrementStackPointer();
 		break;
 	case 4:
-		pc += mem->ReadByte(sp) << 8;
+		pc += (uint16_t)mem->ReadByte(sp) << 8;
 		break;
 	case 5:
 		PollInterrupts();

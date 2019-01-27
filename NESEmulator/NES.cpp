@@ -7,7 +7,7 @@ NES::NES()
 	memory = new Memory();
 	interrupts = new Interrupts();
 	processor = new CPU(memory, interrupts);
-	ppu = new PPU(memory);
+	ppu = new PPU(memory, interrupts);
 
 	memory->SetPPU(ppu);
 }
@@ -41,10 +41,6 @@ bool NES::LoadROM(std::string path)
 
 	if (!input.fail())
 	{
-		unsigned int inputSize = input.tellg();
-		inputSize = (inputSize > 0xFFFF) ? 0xFFFF : inputSize;
-		std::cout << inputSize << std::endl;
-
 		input.seekg(0, std::ios::beg);
 
 		// Check if is iNES file
@@ -68,6 +64,25 @@ bool NES::LoadROM(std::string path)
 		uint8_t controlByte1 = input.get();
 		uint8_t controlByte2 = input.get();
 
+		// Mirroring mode
+		NametableMirroringMode mirroringMode = MIRRORING_SINGLESCREEN;
+		if (controlByte1 & 1)
+		{
+			mirroringMode = MIRRORING_VERTICAL;
+		}
+		else
+		{
+			mirroringMode = MIRRORING_HORIZONTAL;
+		}
+
+		if (controlByte1 & 8)
+		{
+			mirroringMode = MIRRORING_4SCREEN;
+		}
+
+		ppu->SetMirrorMode(mirroringMode);
+
+		// Mapper
 		uint8_t mapperNumber = (controlByte1 & 0x0F) + ((controlByte2 & 0x0F) << 4);
 		SetMapper(mapperNumber);
 
@@ -78,6 +93,7 @@ bool NES::LoadROM(std::string path)
 		// Load PRG ROM
 		input.seekg(16, std::ios::beg);
 		mapper->LoadPRGROM(input, numPRGBanks);
+		mapper->LoadCHRROM(input, numCHRBanks);
 
 		processor->OnReset();
 
@@ -100,6 +116,9 @@ void NES::SetMapper(uint8_t mapperNumber)
 	case 1:
 		mapper = new MapperMMC1(ppu);
 		break;
+	default:
+		printf("Unsupported mapper - %i!", mapperNumber);
+		break;
 	}
 
 	processor->SetMapper(mapper);
@@ -110,5 +129,19 @@ void NES::SetMapper(uint8_t mapperNumber)
 void NES::Cycle()
 {
 	processor->Cycle();
+	for (int i = 0; i < ppuCyclesPerCPUCycle; i++)
+	{
+		ppu->Cycle();
+	}
 	interrupts->PollInterruptLines();
+}
+
+void NES::RunOneFrame()
+{
+	uint32_t cpuCycles = 0;
+	while (cpuCycles < cpuCyclesPerFrame)
+	{
+		Cycle();
+		cpuCycles++;
+	}
 }

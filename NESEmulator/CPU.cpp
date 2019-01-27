@@ -159,16 +159,24 @@ void CPU::PollInterrupts()
 		}
 		else if (((interruptType == INTERRUPT_IRQ) && (ps.I() == 0)) || (interruptType == INTERRUPT_NMI))
 		{
-			pendingInterrupt == interruptType;
+			pendingInterrupt = interruptType;
 		}
 	}
 }
 
 void CPU::Cycle()
 {
+	if (mem->ppuOAMDMAActive)
+	{
+		mem->PPUOAMDMACycle();
+		cyclesThisSecond++;
+		cyclesElapsed++;
+		return;
+	}
+
 	if (instructionFinished)
 	{
-		Log();
+		//Log();
 
 		// Fetch opcode of next instruction
 		instructionProgress = 0;
@@ -200,7 +208,7 @@ void CPU::Cycle()
 
 		curInstructionType = instructionTypeTable[curInstructionOpcode];
 
-		callHistory.push_back(InstructionInfo::instructions[curInstructionOpcode]);
+		//callHistory.push_back(InstructionInfo::instructions[curInstructionOpcode]);
 
 		mapper->OnInstructionFinished();
 
@@ -217,7 +225,7 @@ void CPU::Cycle()
 	// Timing
 	if ((std::clock() - startTime) >= CLOCKS_PER_SEC)
 	{
-		//printf("Cycles per second - %fM\n", (double)cyclesThisSecond / 1000000.0);
+		printf("Cycles per second - %fM\n", (double)cyclesThisSecond / 1000000.0);
 		cyclesThisSecond = 0;
 		startTime = std::clock();
 	}

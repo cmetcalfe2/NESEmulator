@@ -42,7 +42,10 @@ void CPU::AddressMode_ZP()
 		IncrementPC();
 		break;
 	case 2:
-		memVal = mem->ReadByte(address);
+		if (curInstructionType == IT_R || curInstructionType == IT_RW)
+		{
+			memVal = mem->ReadByte(address);
+		}
 		if (curInstructionType == IT_R || curInstructionType == IT_W)
 		{
 			PollInterrupts();
@@ -99,7 +102,10 @@ void CPU::AddressMode_ZPI(uint8_t* reg)
 	}
 	case 3:
 	{
-		memVal = mem->ReadByte(address);
+		if (curInstructionType == IT_R || curInstructionType == IT_RW)
+		{
+			memVal = mem->ReadByte(address);
+		}
 
 		if (curInstructionType == IT_R || curInstructionType == IT_W)
 		{
@@ -183,7 +189,6 @@ void CPU::AddressMode_REL()
 
 void CPU::AddressMode_ABS()
 {
-
 	switch (instructionProgress)
 	{
 	case 1:
@@ -195,7 +200,7 @@ void CPU::AddressMode_ABS()
 	}
 	case 2:
 	{
-		address += mem->ReadByte(pc) << 8;
+		address += (uint16_t)mem->ReadByte(pc) << 8;
 		curOperand2 = (address >> 8) & 0x00FF;
 		if (curInstructionOpcode == 0x4C) // JMP, special exception
 		{
@@ -211,7 +216,11 @@ void CPU::AddressMode_ABS()
 	}
 	case 3:
 	{
-		memVal = mem->ReadByte(address);
+		if (curInstructionType == IT_R || curInstructionType == IT_RW)
+		{
+			memVal = mem->ReadByte(address);
+		}
+
 		if (curInstructionType == IT_R || curInstructionType == IT_W)
 		{
 			PollInterrupts();
@@ -267,7 +276,7 @@ void CPU::AddressMode_ABSI(uint8_t* reg)
 	}
 	case 2:
 	{
-		address += mem->ReadByte(pc) << 8;
+		address += (uint16_t)mem->ReadByte(pc) << 8;
 		curOperand2 = (address >> 8) & 0x00FF;
 		uint8_t addressLowByte = address & 0x00FF;
 		uint8_t oldAddressLowByte = addressLowByte;
@@ -299,7 +308,10 @@ void CPU::AddressMode_ABSI(uint8_t* reg)
 	}
 	case 4:
 	{
-		memVal = mem->ReadByte(address);
+		if (curInstructionType == IT_R || curInstructionType == IT_RW)
+		{
+			memVal = mem->ReadByte(address);
+		}
 		if (curInstructionType == IT_R || curInstructionType == IT_W)
 		{
 			PollInterrupts();
@@ -344,7 +356,7 @@ void CPU::AddressMode_INDIR()
 	}
 	case 2:
 	{
-		pointer += mem->ReadByte(pc) << 8;
+		pointer += (uint16_t)mem->ReadByte(pc) << 8;
 		curOperand2 = (pointer >> 8) & 0x00FF;
 		IncrementPC();
 		break;
@@ -363,7 +375,7 @@ void CPU::AddressMode_INDIR()
 		{
 			pointer -= 0x0100; // Pointer high byte remains same (page crossings not handled)
 		}
-		pc = mem->ReadByte(pointer) << 8;
+		pc = (uint16_t)mem->ReadByte(pointer) << 8;
 		pc += memVal;
 		instructionFinished = true;
 		break;
@@ -398,12 +410,15 @@ void CPU::AddressMode_INDIRX()
 	{
 		pointer += 1;
 		pointer &= 0x00FF; // no page crossings
-		address += mem->ReadByte(pointer) << 8;
+		address += (uint16_t)mem->ReadByte(pointer) << 8;
 		break;
 	}
 	case 5:
 	{
-		memVal = mem->ReadByte(address);
+		if (curInstructionType == IT_R || curInstructionType == IT_RW)
+		{
+			memVal = mem->ReadByte(address);
+		}
 		if (curInstructionType == IT_R || curInstructionType == IT_W)
 		{
 			PollInterrupts();
@@ -455,7 +470,7 @@ void CPU::AddressMode_INDIRY()
 	{
 		pointer += 1;
 		pointer &= 0x00FF; // no page crossings
-		address += mem->ReadByte(pointer) << 8;
+		address += (uint16_t)mem->ReadByte(pointer) << 8;
 
 		uint8_t addressLowByte = address & 0x00FF;
 		uint8_t oldAddressLowByte = addressLowByte;
@@ -487,7 +502,10 @@ void CPU::AddressMode_INDIRY()
 	}
 	case 5:
 	{
-		memVal = mem->ReadByte(address);
+		if (curInstructionType == IT_R || curInstructionType == IT_RW)
+		{
+			memVal = mem->ReadByte(address);
+		}
 		if (curInstructionType == IT_R || curInstructionType == IT_W)
 		{
 			PollInterrupts();
