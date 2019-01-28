@@ -18,10 +18,15 @@ void PPU::Init()
 {
 	InitVRAMMap();
 	InitCycleFunctionVectors();
+	LoadPaletteFile();
+	Reset();
+}
+
+void PPU::Reset()
+{
 	curPixel = 0;
 	curScanline = 261;
 	oddFrame = false;
-	renderingEnabled = true;
 
 	// Registers
 	SetPPUCTRL(0x00);
@@ -31,8 +36,6 @@ void PPU::Init()
 	SetPPUSCROLL(0x00);
 	SetPPUADDR(0x00);
 	//SetPPUDATA(0x00);
-
-	LoadPaletteFile();
 }
 
 void PPU::SetMapper(Mapper* m)
@@ -125,17 +128,8 @@ void PPU::SetVRAMByte(uint16_t address, uint8_t val)
 	{
 		return;
 	}
-	if (address >= 0x3F00)
-	{
-		int test = 0;
-	}
 
 	uint16_t realAddress = GetRealVRAMAddress(address);
-
-	if (realAddress == 0x23F9)
-	{
-		int test = 0;
-	}
 	
 	if (realAddress < 0x2000)
 	{

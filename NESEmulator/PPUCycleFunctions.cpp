@@ -188,10 +188,7 @@ void PPU::RenderPixel()
 		//paletteIndex |= (bgAttributeRegisters[1] & 1) << 3;
 
 		uint8_t paletteVal = ReadVRAMByte(palletteAddress);
-		if (palletteAddress != 0x3F00)
-		{
-			int test = 0;
-		}
+
 		renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][3] = nesPalette[paletteVal].r;
 		renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][2] = nesPalette[paletteVal].g;
 		renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][1] = nesPalette[paletteVal].b;

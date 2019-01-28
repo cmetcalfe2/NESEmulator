@@ -82,6 +82,12 @@ uint8_t Memory::ReadIORegister(uint16_t addr)
 		// PPUDATA
 		return ppu->ReadPPUDATA();
 		break;
+	case 0x4016:
+		return InputManager::GetInstance()->ReadController(0);
+		break;
+	case 0x4017:
+		return InputManager::GetInstance()->ReadController(1);
+		break;
 	default:
 		return 0x0000;
 		break;
@@ -150,6 +156,12 @@ void Memory::SetIORegister(uint16_t addr, uint8_t val)
 		ppuOAMDMAActive = true;
 		curPPUOAMDMACycle = 0;
 		ppuOAMDMAAddr = ((uint16_t)val << 8);
+		break;
+	case 0x4016:
+		InputManager::GetInstance()->WriteController(0, val);
+		break;
+	case 0x4017:
+		InputManager::GetInstance()->WriteController(1, val);
 		break;
 	}
 }

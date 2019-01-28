@@ -15,7 +15,14 @@ uint8_t PPU::ReadOAMDATA()
 
 uint8_t PPU::ReadPPUDATA()
 {
-	uint8_t val = vram[curVRAMAddr];
+	uint8_t val = ppuDataReadLatch;
+	ppuDataReadLatch = ReadVRAMByte(curVRAMAddr);
+
+	if (curVRAMAddr >= 0x3F00)
+	{
+		val = ppuDataReadLatch;
+	}
+
 	if ((curScanline > 239 && curScanline != 261) | !renderingEnabled)
 	{
 		curVRAMAddr += ppuDataAddressIncrement;

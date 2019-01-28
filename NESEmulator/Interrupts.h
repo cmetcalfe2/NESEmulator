@@ -12,14 +12,13 @@ enum InterruptType
 class Interrupts
 {
 public:
+	void Reset();
 	void AssertIntertupt(InterruptType interruptType);
 	InterruptType PollEdgeDetectors();
 	void PollInterruptLines();
 	void InterruptHijacking(InterruptType& interruptBeingHandled);
 
 private:
-	void Reset();
-
 	bool rstPending = false;
 
 	bool nmiEdgeDetectorPowered = false;

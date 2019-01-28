@@ -23,7 +23,7 @@ InterruptType Interrupts::PollEdgeDetectors()
 		Reset();
 		return INTERRUPT_RST;
 	}
-	if (nmiEdgeDetectorPowered)
+	else if (nmiEdgeDetectorPowered)
 	{
 		nmiEdgeDetectorPowered = false;
 		nmiLinePowered = false;
@@ -32,6 +32,10 @@ InterruptType Interrupts::PollEdgeDetectors()
 	else if (irqLinePowered)
 	{
 		return INTERRUPT_IRQ;
+	}
+	else
+	{
+		return INTERRUPT_NONE;
 	}
 }
 

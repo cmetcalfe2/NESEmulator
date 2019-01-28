@@ -25,6 +25,10 @@ bool RenderTexture::CreateBlank(SDL_Renderer* renderer)
 		printf("Unable to create blank texture! SDL Error: %s\n", SDL_GetError());
 		return false;
 	}
+	else
+	{
+		return true;
+	}
 }
 
 bool RenderTexture::LockTexture()

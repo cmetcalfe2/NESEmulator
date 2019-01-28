@@ -4,7 +4,6 @@
 Mapper::Mapper(PPU* p)
 {
 	ppu = p;
-	ppu->Cycle();
 }
 
 
@@ -19,7 +18,6 @@ void Mapper::LoadPRGROM(std::ifstream& inputStream, uint8_t numBanks)
 	{
 		prgRom[i] = inputStream.get();
 	}
-	OnPRGROMLoaded();
 }
 
 void Mapper::LoadCHRROM(std::ifstream& inputStream, uint8_t numBanks)
@@ -31,8 +29,6 @@ void Mapper::LoadCHRROM(std::ifstream& inputStream, uint8_t numBanks)
 	{
 		chrRom[i] = (numBanks == 0) ? 0 : inputStream.get();
 	}
-
-	OnCHRROMLoaded();
 }
 
 void Mapper::WritePRGByte(uint32_t address, uint8_t val)
@@ -50,7 +46,7 @@ uint8_t Mapper::ReadPRGByte(uint32_t address)
 	else
 	{
 		// Bank 2
-		return prgRom[prgBankOffset1 + (address - 0xC000)];
+		return prgRom[prgBankOffset2 + (address - 0xC000)];
 	}
 	//uint32_t bankOffset = (address < 0xC000) ? prgBankOffset1 - 0x8000 : prgBankOffset2 - 0xC000;
 	//return prgRom[address + bankOffset];

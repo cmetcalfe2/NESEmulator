@@ -38,6 +38,7 @@ public:
 	~PPU();
 
 	void Init();
+	void Reset();
 
 	void Cycle();
 
@@ -166,6 +167,9 @@ private:
 
 	// PPUSCROLL
 	bool ppuRegSecondWrite = false;
+
+	// PPUDATA
+	uint8_t ppuDataReadLatch = 0x00;
 
 	// Internal scroll registers
 	uint16_t curVRAMAddr = 0x0000;

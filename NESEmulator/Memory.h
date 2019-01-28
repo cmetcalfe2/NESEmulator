@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Mapper.h"
+#include "InputManager.h"
 
 
 class PPU;

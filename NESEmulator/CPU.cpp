@@ -18,14 +18,15 @@ CPU::~CPU()
 
 void CPU::Init()
 {
+	Reset();
+}
+
+void CPU::Reset()
+{
 	InitialiseRegisters();
 	instructionFinished = true;
 	startTime = std::clock();
-	OnReset();
-}
 
-void CPU::OnReset()
-{
 	pendingInterrupt = INTERRUPT_RST;
 	mem->SetByte(0x4015, 0); // APU Silenced on reset
 }
@@ -39,7 +40,6 @@ void CPU::InitialiseRegisters()
 		pc = 0x8000;
 	}*/
 	//pc = 0xC000; // TEST : REMOVE
-	printf("0x%X\n", pc);
 	sp = 0x01FF;
 	//sp = 0x01FD; // TEST : REMOVE
 	a = 0;
@@ -155,7 +155,8 @@ void CPU::PollInterrupts()
 		InterruptType interruptType = interrupts->PollEdgeDetectors();
 		if (interruptType == INTERRUPT_RST)
 		{
-			OnReset();
+			pendingInterrupt = interruptType;
+			Reset();
 		}
 		else if (((interruptType == INTERRUPT_IRQ) && (ps.I() == 0)) || (interruptType == INTERRUPT_NMI))
 		{
@@ -202,7 +203,7 @@ void CPU::Cycle()
 			curInstructionOpcode = 0x00; // BRK
 		}
 
-		curInstructionNameString = instructionNameStringTable[curInstructionOpcode];
+		//curInstructionNameString = instructionNameStringTable[curInstructionOpcode];
 
 		curAddressMode = InstructionInfo::instructionAddressingModes[curInstructionOpcode];
 

@@ -60,7 +60,7 @@ public:
 	void Init();
 	void Cycle();
 
-	void OnReset();
+	void Reset();
 
 	void SetMapper(Mapper* mapper);
 

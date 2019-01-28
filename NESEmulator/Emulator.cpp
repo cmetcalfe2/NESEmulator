@@ -4,15 +4,24 @@
 
 Emulator::Emulator()
 {
+	renderer = new Renderer(&nes);
 }
 
 
 Emulator::~Emulator()
 {
+	delete renderer;
+	renderer = NULL;
 }
 
 bool Emulator::Init()
 {
+	// Load settings
+	Settings::Init();
+
+	// Create input manager
+	InputManager::Init();
+
 	//Initialize SDL
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
 	{
@@ -21,16 +30,21 @@ bool Emulator::Init()
 	}
 	else
 	{
-		if (!renderer.Init())
+		if (!renderer->Init())
 		{
 			return false;
+		}
+		else
+		{
+			InputManager::GetInstance()->InitGamepads();
 		}
 	}
 
 	//romLoaded = nes.LoadROM("C:/Users/Craig/Documents/Projects/NESEmulator/ROMs/instr_test-v5/official_only.nes");
-	romLoaded = nes.LoadROM("C:/Users/Craig/Documents/Projects/NESEmulator/ROMs/ROM Collection/Balloon Fight (USA).nes");
+	//romLoaded = nes.LoadROM("C:/Users/Craig/Documents/Projects/NESEmulator/ROMs/ROM Collection/Balloon Fight (USA).nes");
 	//romLoaded = nes.LoadROM("C:/Users/Craig/Documents/Projects/NESEmulator/ROMs/Zelda.NES");
-	//romLoaded = nes.LoadROM("C:/Users/Craig/Documents/Projects/NESEmulator/ROMs/nestest.nes");
+	romLoaded = nes.LoadROM("C:/Users/Craig/Documents/Projects/NESEmulator/ROMs/nestest.nes");
+	//romLoaded = nes.LoadROM("C:/Users/Craig/Documents/Projects/NESEmulator/ROMs/Super_Mario_Bros..nes");
 	
 	return true;
 }
@@ -42,8 +56,8 @@ bool Emulator::Run()
 	if (romLoaded && !pauseEmulation)
 	{
 		nes.RunOneFrame();
-		renderer.CopyEmulatorFrameToTexture(nes.ppu->GetPixelBuffer());
-		renderer.Render();
+		renderer->CopyEmulatorFrameToTexture(nes.ppu->GetPixelBuffer());
+		renderer->Render();
 	}
 
 	return running;
@@ -54,6 +68,12 @@ void Emulator::PollEvents()
 	SDL_Event e;
 	while (SDL_PollEvent(&e) != 0)
 	{
+		// UI Event handling
+		ImGui_ImplSDL2_ProcessEvent(&e);
+
+		// Controller input
+		InputManager::GetInstance()->HandleEvent(e);
+
 		//User requests quit
 		if (e.type == SDL_QUIT)
 		{

@@ -3,6 +3,7 @@
 
 #include "NES.h"
 #include "Renderer.h"
+#include "InputManager.h"
 
 class Emulator
 {
@@ -20,7 +21,7 @@ private:
 	bool pauseEmulation = false;
 
 	NES nes;
-	Renderer renderer;
+	Renderer* renderer;
 
 	void PollEvents();
 };

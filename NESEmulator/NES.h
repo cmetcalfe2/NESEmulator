@@ -22,6 +22,7 @@ public:
 	PPU* ppu;
 	Memory* memory;
 	Mapper* mapper;
+	InputManager* inputManager;
 	Interrupts* interrupts;
 
 private:

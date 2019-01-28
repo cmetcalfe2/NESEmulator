@@ -16,6 +16,9 @@ public:
 	MapperMMC1(PPU* p);
 	~MapperMMC1();
 
+	void OnPRGROMLoaded() override {};
+	void OnCHRROMLoaded() override {};
+
 	void WritePRGByte(uint32_t address, uint8_t val) override;
 	void OnInstructionFinished() override;
 

@@ -12,10 +12,10 @@ public:
 	~Mapper();
 
 	void LoadPRGROM(std::ifstream& inputStream, uint8_t numBanks); // Loads PRG ROM, caller should check that stream pointer is at beginning of PRG ROM
-	virtual void OnPRGROMLoaded() {};
+	virtual void OnPRGROMLoaded() = 0;
 
 	void LoadCHRROM(std::ifstream& inputStream, uint8_t numBanks); // Loads CHR ROM, caller should check that stream pointer is at beginning of CHR ROM
-	virtual void OnCHRROMLoaded() {};
+	virtual void OnCHRROMLoaded() = 0;
 
 	virtual void WritePRGByte(uint32_t address, uint8_t val);
 	virtual uint8_t ReadPRGByte(uint32_t address);

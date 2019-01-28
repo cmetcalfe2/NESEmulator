@@ -83,7 +83,7 @@ bool NES::LoadROM(std::string path)
 		ppu->SetMirrorMode(mirroringMode);
 
 		// Mapper
-		uint8_t mapperNumber = (controlByte1 & 0x0F) + ((controlByte2 & 0x0F) << 4);
+		uint8_t mapperNumber = ((controlByte1 & 0xF0) >> 4) + (controlByte2 & 0xF0);
 		SetMapper(mapperNumber);
 
 		// Check control byte stuff here
@@ -93,9 +93,13 @@ bool NES::LoadROM(std::string path)
 		// Load PRG ROM
 		input.seekg(16, std::ios::beg);
 		mapper->LoadPRGROM(input, numPRGBanks);
+		mapper->OnPRGROMLoaded();
 		mapper->LoadCHRROM(input, numCHRBanks);
+		mapper->OnCHRROMLoaded();
 
-		processor->OnReset();
+		interrupts->Reset();
+		processor->Reset();
+		ppu->Reset();
 
 		return true;
 	}
@@ -108,6 +112,12 @@ bool NES::LoadROM(std::string path)
 
 void NES::SetMapper(uint8_t mapperNumber)
 {
+	if (mapper != NULL)
+	{
+		delete mapper;
+		mapper = NULL;
+	}
+
 	switch (mapperNumber)
 	{
 	case 0:
