@@ -190,40 +190,24 @@ void PPU::SetMirrorMode(NametableMirroringMode mode)
 	switch (mode)
 	{
 	case MIRRORING_HORIZONTAL:
-		/*std::copy(nametableL1Map, nametableL1Map + nametableSize, vramMap[0x2000]);
-		std::copy(nametableL1Map, nametableL1Map + nametableSize, vramMap[0x2400]);
-		std::copy(nametableL3Map, nametableL3Map + nametableSize, vramMap[0x2800]);
-		std::copy(nametableL3Map, nametableL3Map + nametableSize, vramMap[0x2C00]);*/
 		memcpy(&vramMap[0x2000], &nametableL1Map[0], nametableSize);
 		memcpy(&vramMap[0x2400], &nametableL1Map[0], nametableSize);
 		memcpy(&vramMap[0x2800], &nametableL3Map[0], nametableSize);
 		memcpy(&vramMap[0x2C00], &nametableL3Map[0], nametableSize);
 		break;
 	case MIRRORING_VERTICAL:
-		/*std::copy(nametableL1Map, nametableL1Map + nametableSize, vramMap[0x2000]);
-		std::copy(nametableL2Map, nametableL2Map + nametableSize, vramMap[0x2400]);
-		std::copy(nametableL1Map, nametableL1Map + nametableSize, vramMap[0x2800]);
-		std::copy(nametableL2Map, nametableL2Map + nametableSize, vramMap[0x2C00]);*/
 		memcpy(&vramMap[0x2000], &nametableL1Map[0], nametableSize);
 		memcpy(&vramMap[0x2400], &nametableL2Map[0], nametableSize);
 		memcpy(&vramMap[0x2800], &nametableL1Map[0], nametableSize);
 		memcpy(&vramMap[0x2C00], &nametableL2Map[0], nametableSize);
 		break;
 	case MIRRORING_SINGLESCREEN:
-		/*std::copy(nametableL1Map, nametableL1Map + nametableSize, vramMap[0x2000]);
-		std::copy(nametableL1Map, nametableL1Map + nametableSize, vramMap[0x2400]);
-		std::copy(nametableL1Map, nametableL1Map + nametableSize, vramMap[0x2800]);
-		std::copy(nametableL1Map, nametableL1Map + nametableSize, vramMap[0x2C00]);*/
 		memcpy(&vramMap[0x2000], &nametableL1Map[0], nametableSize);
 		memcpy(&vramMap[0x2400], &nametableL1Map[0], nametableSize);
 		memcpy(&vramMap[0x2800], &nametableL1Map[0], nametableSize);
 		memcpy(&vramMap[0x2C00], &nametableL1Map[0], nametableSize);
 		break;
 	case MIRRORING_4SCREEN:
-		/*std::copy(nametableL1Map, nametableL1Map + nametableSize, vramMap[0x2000]);
-		std::copy(nametableL2Map, nametableL2Map + nametableSize, vramMap[0x2400]);
-		std::copy(nametableL3Map, nametableL3Map + nametableSize, vramMap[0x2800]);
-		std::copy(nametableL4Map, nametableL4Map + nametableSize, vramMap[0x2C00]);*/
 		memcpy(&vramMap[0x2000], &nametableL1Map[0], nametableSize);
 		memcpy(&vramMap[0x2400], &nametableL2Map[0], nametableSize);
 		memcpy(&vramMap[0x2800], &nametableL3Map[0], nametableSize);
@@ -238,7 +222,7 @@ void PPU::InitCycleFunctionVectors()
 	{
 		for (int y = 0; y < 262; y++)
 		{
-			std::vector<CycleFunction>* functionVector = &cycleFunctions[x][y];
+			std::vector<CycleFunction> functionVector;
 
 			if (y < 240 || y == 261)
 			{
@@ -250,41 +234,41 @@ void PPU::InitCycleFunctionVectors()
 					if (!isPreRenderLine)
 					{
 						// Render pixel
-						functionVector->push_back(&PPU::RenderPixel);
+						functionVector.push_back(&PPU::RenderPixel);
 					}
 				}
 
 				// Visible lines / Prerender line
 				if ((x > 0 && x <= 256) || (x >= 321 && x <= 336))
 				{
-					functionVector->push_back(&PPU::ShiftBGRegisters);
+					functionVector.push_back(&PPU::ShiftBGRegisters);
 
 					int subCycle = x % 8;
 					switch (subCycle)
 					{
 					case 0:
-						functionVector->push_back(&PPU::IncCurVRAMAddrHorizontal);
+						functionVector.push_back(&PPU::IncCurVRAMAddrHorizontal);
 						if (x == 256)
 						{
-							functionVector->push_back(&PPU::IncCurVRAMAddrVertical);
+							functionVector.push_back(&PPU::IncCurVRAMAddrVertical);
 						}
-						functionVector->push_back(&PPU::FeedBGRegisters);
+						functionVector.push_back(&PPU::FeedBGRegisters);
 						break;
 					case 1:
-						functionVector->push_back(&PPU::FetchNTByte);
+						functionVector.push_back(&PPU::FetchNTByte);
 						if (x == 1 && isPreRenderLine)
 						{
-							functionVector->push_back(&PPU::ClearFlags);
+							functionVector.push_back(&PPU::ClearFlags);
 						}
 						break;
 					case 3:
-						functionVector->push_back(&PPU::FetchATByte);
+						functionVector.push_back(&PPU::FetchATByte);
 						break;
 					case 5:
-						functionVector->push_back(&PPU::FetchLowBGByte);
+						functionVector.push_back(&PPU::FetchLowBGByte);
 						break;
 					case 7:
-						functionVector->push_back(&PPU::FetchHighBGByte);
+						functionVector.push_back(&PPU::FetchHighBGByte);
 						break;
 					}
 				}
@@ -292,26 +276,31 @@ void PPU::InitCycleFunctionVectors()
 				if (x == 257)
 				{
 					// hori v = hori t
-					functionVector->push_back(&PPU::CopyVRAMAddrHorizontal);
+					functionVector.push_back(&PPU::CopyVRAMAddrHorizontal);
 				}
 
 				if (isPreRenderLine && x >= 280 && x <= 304)
 				{
 					// vert v = vert t
-					functionVector->push_back(&PPU::CopyVRAMAddrVertical);
+					functionVector.push_back(&PPU::CopyVRAMAddrVertical);
 				}
 
 				if (x == 337 || x == 339)
 				{
-					functionVector->push_back(&PPU::FetchNTByte);
+					functionVector.push_back(&PPU::FetchNTByte);
 				}
 			}
 			else if (y == 241 && x == 1)
 			{
-				functionVector->push_back(&PPU::SetVBlankStartedFlag);
+				functionVector.push_back(&PPU::SetVBlankStartedFlag);
 			}
 
-			numFunctionsInCycle[x][y] = functionVector->size();
+			numFunctionsInCycle[x][y] = functionVector.size();
+
+			for (int i = 0; i < functionVector.size(); i++)
+			{
+				cycleFunctions[x][y][i] = functionVector[i];
+			}
 
 		}
 	}
@@ -319,7 +308,7 @@ void PPU::InitCycleFunctionVectors()
 
 void PPU::Cycle()
 {
-	int numCycleFunctions = numFunctionsInCycle[curPixel][curScanline];
+	/*int numCycleFunctions = numFunctionsInCycle[curPixel][curScanline];
 
 	if (numCycleFunctions > 0)
 	{
@@ -329,9 +318,89 @@ void PPU::Cycle()
 			//(this->*cycleFunctions[curPixel][curScanline][i])();
 			(this->*firstFunctionPtr[i])();
 		}
+	}*/
+
+	/* TEST */
+	int x = curPixel;
+	int y = curScanline;
+
+	if (y < 240 || y == 261)
+	{
+
+		bool isPreRenderLine = (y == 261);
+
+		if (x > 0 && x <= 256)
+		{
+			if (!isPreRenderLine)
+			{
+				// Render pixel
+				RenderPixel();
+			}
+		}
+
+		// Visible lines / Prerender line
+		if ((x > 0 && x <= 256) || (x >= 321 && x <= 336))
+		{
+			ShiftBGRegisters();
+
+			int subCycle = x % 8;
+			switch (subCycle)
+			{
+			case 0:
+				IncCurVRAMAddrHorizontal();
+				if (x == 256)
+				{
+					IncCurVRAMAddrVertical();
+				}
+				FeedBGRegisters();
+				break;
+			case 1:
+				FetchNTByte();
+				if (x == 1 && isPreRenderLine)
+				{
+					ClearFlags();
+				}
+				break;
+			case 3:
+				FetchATByte();
+				break;
+			case 5:
+				FetchLowBGByte();
+				break;
+			case 7:
+				FetchHighBGByte();
+				break;
+			}
+		}
+
+		if (x == 257)
+		{
+			// hori v = hori t
+			CopyVRAMAddrHorizontal();
+		}
+
+		if (isPreRenderLine && x >= 280 && x <= 304)
+		{
+			// vert v = vert t
+			CopyVRAMAddrVertical();
+		}
+
+		if (x == 337 || x == 339)
+		{
+			FetchNTByte();
+		}
+	}
+	else if (y == 241 && x == 1)
+	{
+		SetVBlankStartedFlag();
 	}
 
-	SpriteEvaluationCycle();
+	/* END TEST */
+
+	if (renderingEnabled && (curScanline < 240 || curScanline == 261))
+	{
+		SpriteEvaluationCycle();
+	}
 
 	curPixel++;
 	if (curPixel == 341)
@@ -359,7 +428,120 @@ void PPU::Cycle()
 
 void PPU::SpriteEvaluationCycle()
 {
+	bool oddCycle = (curPixel % 2);
+	if (curPixel > 0 && curPixel < 65)
+	{
+		// Initialise secondary OAM to 0xFF
+		if (oddCycle)
+		{
+			oamData = 0xFF;
+		}
+		if (!oddCycle)
+		{
+			secondaryOAM[curPixel / 2] = oamData;
+		}
+	}
+	else if (curPixel < 257)
+	{
+		// Sprite evaluation
+		if (curPixel == 65)
+		{
+			// Reset vars
+			baseOAMAddr = oamAddr;
+			spriteEvalN = 0;
+			spriteEvalM = 0;
+			spriteEvalO = 0;
 
+			copyingSprite = false;
+			secondaryOAMIndex = 0;
+			numSpritesFound = 0;
+			allSpritesEvaluated = false;
+		}
+
+		if (oddCycle)
+		{
+			if (spriteEvalN > 63)
+			{
+				allSpritesEvaluated = true;
+				spriteEvalN = 0;
+			}
+
+			oamData = primaryOAM[baseOAMAddr + (spriteEvalN * 4) + spriteEvalM];
+
+		}
+		else
+		{
+			if (numSpritesFound < 8)
+			{
+				if (IsSpriteYInRange())
+				{
+					copyingSprite = true;
+				}
+				if (copyingSprite)
+				{
+					secondaryOAM[secondaryOAMIndex] = oamData;
+					secondaryOAMIndex++;
+					spriteEvalM++;
+					if (spriteEvalM > 3)
+					{
+						spriteEvalM = 0;
+						copyingSprite = false;
+						spriteIndices[numSpritesFound] = spriteEvalN;
+						numSpritesFound++;
+						spriteEvalN++;
+					}
+				}
+				else
+				{
+					spriteEvalN++;
+				}
+			}
+			else if (!allSpritesEvaluated)
+			{
+				if (IsSpriteYInRange() && !copyingSprite)
+				{
+					copyingSprite = true;
+					spriteOverflowFlag = 1;
+					spriteEvalO = 0;
+				}
+				else if (copyingSprite)
+				{
+					spriteEvalM++;
+					spriteEvalO++;
+					if (spriteEvalM > 3)
+					{
+						spriteEvalM = 0;
+						spriteEvalN++;
+					}
+					if (spriteEvalO > 3)
+					{
+						spriteEvalO = 0;
+						copyingSprite = false;
+					}
+				}
+				else
+				{
+					spriteEvalN++;
+					spriteEvalM++;
+					
+					if (spriteEvalM > 3)
+					{
+						spriteEvalM = 0;
+					}
+				}
+			}
+			else
+			{
+				spriteEvalM = 0;
+				spriteEvalN++;
+			}
+		}
+	}
+	else if (curPixel == 257)
+	{
+		secondaryOAMIndex = 0;
+		LoadSpritesIntoRegisters();
+	}
 }
 
 void* PPU::GetPixelBuffer()

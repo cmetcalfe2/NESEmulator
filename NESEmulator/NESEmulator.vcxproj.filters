@@ -162,6 +162,9 @@
     <ClCompile Include="StandardController.cpp">
       <Filter>Source Files\Input</Filter>
     </ClCompile>
+    <ClCompile Include="PPUSpriteEvaluationFunctions.cpp">
+      <Filter>Source Files\PPU</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NES.h">

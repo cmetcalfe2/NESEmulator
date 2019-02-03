@@ -40,7 +40,7 @@ protected:
 	uint32_t chrBankOffset1; // Address of CHR ROM accessed via $0000-$0FFF
 	uint32_t chrBankOffset2; // Address of CHR ROM accessed via $1000-$1FFF
 
-	bool chrRAMEnabled = false;
+	bool chrRAMEnabled = true;
 
 	PPU* ppu;
 };

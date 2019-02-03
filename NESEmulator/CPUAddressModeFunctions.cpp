@@ -282,25 +282,25 @@ void CPU::AddressMode_ABSI(uint8_t* reg)
 		uint8_t oldAddressLowByte = addressLowByte;
 		addressLowByte += *reg;
 		address = (address & 0xFF00) | addressLowByte;
-		pageCrossed = (addressLowByte < oldAddressLowByte);
+		pageCrossed = ((addressLowByte <= oldAddressLowByte) && (*reg != 0));
+		if (pageCrossed == true)
+		{
+			int test = 0;
+		}
 		IncrementPC();
 		break;
 	}
 	case 3:
 	{
 		memVal = mem->ReadByte(address);
-		if (curInstructionType == IT_R)
+		if (curInstructionType == IT_R && !pageCrossed)
 		{
 			(this->*instructionJumpTable[curInstructionOpcode])();
-			if (!pageCrossed)
-			{
-				// No page crossing
-				PollInterrupts();
-				instructionFinished = true;
-			}
-		}
 
-		if (pageCrossed)
+			PollInterrupts();
+			instructionFinished = true;
+		}
+		else if (pageCrossed)
 		{
 			address += 0x0100;
 		}
@@ -482,18 +482,14 @@ void CPU::AddressMode_INDIRY()
 	case 4:
 	{
 		memVal = mem->ReadByte(address);
-		if (curInstructionType == IT_R)
+
+		if (curInstructionType == IT_R && !pageCrossed)
 		{
 			(this->*instructionJumpTable[curInstructionOpcode])();
-			if (!pageCrossed)
-			{
-				// No page crossing
-				PollInterrupts();
-				instructionFinished = true;
-			}
-		}
 
-		if (pageCrossed)
+			PollInterrupts();
+			instructionFinished = true;
+		} else if (pageCrossed)
 		{
 			address += 0x0100;
 		}

@@ -15,6 +15,18 @@ void Renderer::RenderMainMenuBar()
 			ImGui::MenuItem("Controller Profiles", NULL, &showControllerProfilesDialog);
 			ImGui::EndMenu();
 		}
+		if (ImGui::BeginMenu("Debug"))
+		{
+			if (ImGui::MenuItem("Dump RAM", NULL))
+			{
+				nes->memory->DumpRAM();
+			}
+			if (ImGui::MenuItem("Dump PPU Memory", NULL))
+			{
+				nes->ppu->DumpVRAM();
+			}
+			ImGui::EndMenu();
+		}
 		ImGui::EndMainMenuBar();
 	}
 }
@@ -23,7 +35,8 @@ void Renderer::RenderFileDialog()
 {
 	if (showOpenROMFileDialog)
 	{
-		if (ImGuiFileDialog::Instance()->FileDialog("Choose ROM File", ".nes\0", ".", ""))
+		//if (ImGuiFileDialog::Instance()->FileDialog("Choose ROM File", ".nes\0", ".", ""))
+		if (ImGuiFileDialog::Instance()->FileDialog("Choose ROM File"))
 		{
 			if (ImGuiFileDialog::Instance()->IsOk == true)
 			{

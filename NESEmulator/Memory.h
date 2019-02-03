@@ -17,7 +17,7 @@ public:
 	void SetMapper(Mapper* m) { mapper = m; };
 	void SetPPU(PPU* p) { ppu = p; };
 
-	static const int MEMORY_AMOUNT = 0xFFFF;
+	static const int MEMORY_AMOUNT = 0x10000;
 	uint8_t memory[MEMORY_AMOUNT];
 	uint16_t memoryMap[MEMORY_AMOUNT]; // maps mirrored memory locations to their real locations
 
@@ -29,6 +29,8 @@ public:
 
 	uint8_t ReadIORegister(uint16_t addr);
 	void SetIORegister(uint16_t addr, uint8_t val);
+
+	void DumpRAM();
 
 	void PPUOAMDMACycle();
 	bool ppuOAMDMAActive = false;

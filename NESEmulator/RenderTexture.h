@@ -17,12 +17,13 @@ public:
 
 	void RenderToScreen(SDL_Renderer* renderer);
 
+	SDL_Texture* texture = NULL;
+
 private:
 	int width;
 	int height;
 	int pitch;
 
-	SDL_Texture* texture = NULL;
 	void* texturePixels = NULL;
 };
 

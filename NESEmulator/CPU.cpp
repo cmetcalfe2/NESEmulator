@@ -40,7 +40,7 @@ void CPU::InitialiseRegisters()
 		pc = 0x8000;
 	}*/
 	//pc = 0xC000; // TEST : REMOVE
-	sp = 0x01FF;
+	sp = 0x0100;
 	//sp = 0x01FD; // TEST : REMOVE
 	a = 0;
 	x = 0;
@@ -203,7 +203,7 @@ void CPU::Cycle()
 			curInstructionOpcode = 0x00; // BRK
 		}
 
-		//curInstructionNameString = instructionNameStringTable[curInstructionOpcode];
+		curInstructionNameString = instructionNameStringTable[curInstructionOpcode];
 
 		curAddressMode = InstructionInfo::instructionAddressingModes[curInstructionOpcode];
 
@@ -226,7 +226,7 @@ void CPU::Cycle()
 	// Timing
 	if ((std::clock() - startTime) >= CLOCKS_PER_SEC)
 	{
-		printf("Cycles per second - %fM\n", (double)cyclesThisSecond / 1000000.0);
+		//printf("Cycles per second - %fM\n", (double)cyclesThisSecond / 1000000.0);
 		cyclesThisSecond = 0;
 		startTime = std::clock();
 	}

@@ -120,6 +120,12 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)thirdparty\include;$(SolutionDir)thirdparty\SDL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <AdditionalOptions>
+      </AdditionalOptions>
+      <AssemblerOutput>All</AssemblerOutput>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -156,6 +162,7 @@
     <ClCompile Include="PPU.cpp" />
     <ClCompile Include="PPUCycleFunctions.cpp" />
     <ClCompile Include="PPURegisterFunctions.cpp" />
+    <ClCompile Include="PPUSpriteEvaluationFunctions.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RendererUI.cpp" />
     <ClCompile Include="RenderTexture.cpp" />

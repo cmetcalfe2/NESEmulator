@@ -54,10 +54,6 @@ uint8_t Mapper::ReadPRGByte(uint32_t address)
 
 void Mapper::SetPRGByte(uint32_t address, uint8_t val)
 {
-	if (address == 0xFFFA || address == 0xFFFB)
-	{
-		int test = 0;
-	}
 	if (address < 0xC000)
 	{
 		// Bank 1

@@ -46,7 +46,7 @@ void PPU::FetchHighBGByte()
 void PPU::FeedBGRegisters()
 {
 	bgPatternRegisters[0] = bgPatternRegisters[0] | (uint16_t)bgLowByte;
-	bgPatternRegisters[1] = bgPatternRegisters[1]| (uint16_t)bgHighByte;
+	bgPatternRegisters[1] = bgPatternRegisters[1] | (uint16_t)bgHighByte;
 
 	bgAttributeRegisters[0] = (bgAttributeRegisters[0] & 0x00FF) | ((uint16_t)atLowLatch << 8);
 	bgAttributeRegisters[1] = (bgAttributeRegisters[1] & 0x00FF) | ((uint16_t)atHighLatch << 8);
@@ -55,7 +55,7 @@ void PPU::FeedBGRegisters()
 void PPU::ClearFlags()
 {
 	vblankStartedFlag = 0;
-	spriteOverflowFlag = 0;
+	spriteZeroHitFlag = 0;
 	spriteOverflowFlag = 0;
 }
 
@@ -168,20 +168,21 @@ void PPU::CopyVRAMAddrVertical()
 
 void PPU::RenderPixel()
 {
+	uint16_t bgPattern = 0;
 	if (showBG)
 	{
 		// BG pixel
 		uint16_t palletteAddress = 0x3F00;
 
-		uint16_t pattern = ((bgPatternRegisters[0] & (0x8000 >> fineXScroll)) >> (15 - fineXScroll)) | ((bgPatternRegisters[1] & (0x8000 >> fineXScroll)) >> (14 - fineXScroll));
+		bgPattern = ((bgPatternRegisters[0] & (0x8000 >> fineXScroll)) >> (15 - fineXScroll)) | ((bgPatternRegisters[1] & (0x8000 >> fineXScroll)) >> (14 - fineXScroll));
 		//paletteIndex |= bgPatternRegisters[0] & 1;
 		//paletteIndex |= (bgPatternRegisters[1] & 1) << 1;
 
-		if (pattern != 0)
+		if (bgPattern != 0)
 		{
-			uint16_t paletteNum = (bgAttributeRegisters[0] & 1) | ((bgAttributeRegisters[1] & 1) << 1);
+			uint16_t paletteNum = ((bgAttributeRegisters[0] & (1 << fineXScroll)) >> fineXScroll) | (((bgAttributeRegisters[1] & (1 << fineXScroll)) >> fineXScroll) << 1);
 			palletteAddress = (0x3F00 + (0x4 * paletteNum));
-			palletteAddress += (pattern);
+			palletteAddress += (bgPattern);
 		}
 
 		//paletteIndex |= (bgAttributeRegisters[0] & 1) << 2;
@@ -189,10 +190,61 @@ void PPU::RenderPixel()
 
 		uint8_t paletteVal = ReadVRAMByte(palletteAddress);
 
-		renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][3] = nesPalette[paletteVal].r;
-		renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][2] = nesPalette[paletteVal].g;
-		renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][1] = nesPalette[paletteVal].b;
-		renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][0] = 0xFF;
+		if (curPixel > 8 || leftMostBGEnabled)
+		{
+			renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][3] = nesPalette[paletteVal].r;
+			renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][2] = nesPalette[paletteVal].g;
+			renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][1] = nesPalette[paletteVal].b;
+			renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][0] = 0xFF;
+		}
+		else
+		{
+			bgPattern = 0;
+		}
+			
+	}
+
+	if (showSprites)
+	{
+		for (int i = 0; i < 8; i++)
+		{
+			if (curPixel >= spriteXPositionCounters[i] && curPixel < (spriteXPositionCounters[i] + 8) && spriteXPositionCounters[i] != 0)
+			{
+				// Sprite is in range
+				int pixelIndex = curPixel - spriteXPositionCounters[i];
+				bool flipHorizontally = spriteAttributes[i] & 0x40;
+				uint16_t pattern;
+				if (!flipHorizontally)
+				{
+					pattern = (((spriteBitmaps[i][0] & (0x80 >> pixelIndex)) >> (7 - pixelIndex)) * 2) + ((spriteBitmaps[i][1] & (0x80 >> pixelIndex)) >> (7 - pixelIndex));
+				}
+				else
+				{
+					pattern = (((spriteBitmaps[i][0] & (1 << pixelIndex)) >> pixelIndex) * 2) + ((spriteBitmaps[i][1] & (1 << pixelIndex)) >> pixelIndex);
+				}
+
+				if (pattern > 0)
+				{
+					// Non transparent
+					uint16_t palletteAddress = 0x3F00 + 0x10 + (0x4 * (spriteAttributes[i] & 0x03)) + pattern;
+					uint8_t palletteVal = ReadVRAMByte(palletteAddress);
+
+					if (bgPattern != 0 && spriteIndices[i] == 0 && (curPixel > 8 || leftMostSpritesEnabled))
+					{
+						spriteZeroHitFlag = 1;
+					}
+
+					if ((bgPattern == 0 || !(spriteAttributes[i] & 0x20)) && (curPixel > 8 || leftMostSpritesEnabled))
+					{
+						renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][3] = nesPalette[palletteVal].r;
+						renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][2] = nesPalette[palletteVal].g;
+						renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][1] = nesPalette[palletteVal].b;
+						renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][0] = 0xFF;
+					}
+					break;
+				}
+			}
+		}
 	}
 }
 

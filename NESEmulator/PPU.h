@@ -46,6 +46,7 @@ public:
 
 	uint8_t ReadVRAMByte(uint16_t address);
 	void SetVRAMByte(uint16_t address, uint8_t val);
+
 	void SetOAMByte(uint8_t val);
 
 	// Dumps VRAM into file to be read by hex editor
@@ -100,9 +101,14 @@ private:
 	void InitCycleFunctionVectors();
 
 	// Array of vectors of functions to be ran at each cycle
-	std::vector<CycleFunction> cycleFunctions[341][262];
+	CycleFunction cycleFunctions[341][262][10];
 	int numFunctionsInCycle[341][262];
 
+	// Sprite evaluation functions
+	bool IsSpriteYInRange();
+	void LoadSpritesIntoRegisters();
+
+	// Palette
 	NESPixel nesPalette[64];
 
 	// Rendered pixel buffers
@@ -144,6 +150,7 @@ private:
 	uint16_t spritePatternTableAddr = 0x0000;
 	uint16_t bgPatternTableAddr = 0x0000;
 	bool eightBySixteenSpriteMode = false;
+	uint8_t spriteHeight;
 	bool ppuSlave = false;
 	bool nmiEnabled = false;
 
@@ -198,10 +205,8 @@ private:
 	/* 2 8-bit shift registers - These contain the palette attributes for the lower 8 pixels of the 16-bit shift register.
 	These registers are fed by a latch which contains the palette attribute for the next tile.
 	Every 8 cycles, the latch is loaded with the palette attribute for the next tile.
-	bgAttributeRegister contains 2 attribute bits for current tile, and bgAttributeRegisterLatch contains 2 bits for next tile */
+	[0] contains low bit and [1] contains high bits  */
 	uint16_t bgAttributeRegisters[2];
-	//uint8_t bgAttributeRegister;
-	//uint8_t bgAttributeRegisterLatch;
 
 	uint8_t ntByte = 0x0000;
 
@@ -211,6 +216,27 @@ private:
 
 	uint8_t bgLowByte = 0x00;
 	uint8_t bgHighByte = 0x00;
+
+	// Internal sprite registers
+	uint8_t spriteBitmaps[8][2]; // 2 bits for each pixel, 8 sprites [0] is low bit and [1] is high bit
+	uint8_t spriteAttributes[8];
+	uint8_t spriteXPositionCounters[8];
+	uint8_t spriteIndices[8];
+
+	uint8_t baseOAMAddr = 0x00;
+
+	bool copyingSprite = false;
+	uint8_t secondaryOAMIndex = 0;
+	int numSpritesFound = 0;
+	bool allSpritesEvaluated = false;
+
+	uint8_t spriteEvalM = 0;
+	uint8_t spriteEvalN = 0;
+	uint8_t spriteEvalO = 0;
+
+	uint8_t spriteY = 0;
+
+
 };
 
 #endif

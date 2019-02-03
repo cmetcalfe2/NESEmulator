@@ -48,7 +48,7 @@ void StandardController::HandleEvent(SDL_Event e)
 		{
 			for (auto &it : profile.bindings)
 			{
-				if (it.second == e.cbutton.button)
+				if (it.second == e.key.keysym.sym)
 				{
 					buttonsPressed[it.first] = 1;
 					break;
@@ -59,7 +59,7 @@ void StandardController::HandleEvent(SDL_Event e)
 		{
 			for (auto &it : profile.bindings)
 			{
-				if (it.second == e.cbutton.button)
+				if (it.second == e.key.keysym.sym)
 				{
 					buttonsPressed[it.first] = 0;
 					break;

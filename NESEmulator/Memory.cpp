@@ -24,7 +24,7 @@ void Memory::Clear()
 
 void Memory::InitMemoryMap()
 {
-	for (uint16_t i = 0x0000; i < MEMORY_AMOUNT; i++)
+	for (uint32_t i = 0x0000; i < MEMORY_AMOUNT; i++)
 	{
 		memoryMap[i] = i;
 	}
@@ -176,7 +176,7 @@ void Memory::PPUOAMDMACycle()
 {
 	if (curPPUOAMDMACycle > 1)
 	{
-		if ((curPPUOAMDMACycle % 2) != 0)
+		if ((curPPUOAMDMACycle % 2) == 0)
 		{
 			ppuOAMDMAByte = ReadByte(ppuOAMDMAAddr);
 			ppuOAMDMAAddr++;
@@ -191,5 +191,28 @@ void Memory::PPUOAMDMACycle()
 	if (curPPUOAMDMACycle == 514)
 	{
 		ppuOAMDMAActive = false;
+	}
+}
+
+void Memory::DumpRAM()
+{
+	std::time_t curTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+	std::stringstream filePathSS;
+	filePathSS << "ramdump_" << std::ctime(&curTime) << ".hex";
+	std::string filePath = filePathSS.str();
+	std::replace(filePath.begin(), filePath.end(), ':', '-');
+	filePath.erase(std::remove(filePath.begin(), filePath.end(), '\n'), filePath.end());
+	filePath.erase(std::remove(filePath.begin(), filePath.end(), '\r'), filePath.end());
+	std::ofstream outputFile(filePath, std::ios::binary);
+
+	if (outputFile.is_open())
+	{
+		for (int i = 0; i < MEMORY_AMOUNT; i++)
+		{
+			outputFile << ReadByte(i);
+		}
+
+		outputFile.flush();
+		outputFile.close();
 	}
 }
