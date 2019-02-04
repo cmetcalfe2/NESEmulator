@@ -89,8 +89,9 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)thirdparty\include;$(SolutionDir)thirdparty\SDL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)thirdparty\include;$(SolutionDir)thirdparty\SDL\include;$(ProjectDir)nes-snd-emu;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -118,7 +119,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)thirdparty\include;$(SolutionDir)thirdparty\SDL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)thirdparty\include;$(SolutionDir)thirdparty\SDL\include;$(ProjectDir)nes-snd-emu;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -135,6 +136,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="APU.cpp" />
     <ClCompile Include="Controller.cpp" />
     <ClCompile Include="CPU.cpp" />
     <ClCompile Include="CPUAddressModeFunctions.cpp" />
@@ -158,6 +160,16 @@
     <ClCompile Include="MapperMMC1.cpp" />
     <ClCompile Include="MapperNROM.cpp" />
     <ClCompile Include="Memory.cpp" />
+    <ClCompile Include="nes-snd-emu\nes_apu\apu_snapshot.cpp" />
+    <ClCompile Include="nes-snd-emu\nes_apu\Blip_Buffer.cpp" />
+    <ClCompile Include="nes-snd-emu\nes_apu\Multi_Buffer.cpp" />
+    <ClCompile Include="nes-snd-emu\nes_apu\Nes_Apu.cpp" />
+    <ClCompile Include="nes-snd-emu\nes_apu\Nes_Namco.cpp" />
+    <ClCompile Include="nes-snd-emu\nes_apu\Nes_Oscs.cpp" />
+    <ClCompile Include="nes-snd-emu\nes_apu\Nes_Vrc6.cpp" />
+    <ClCompile Include="nes-snd-emu\nes_apu\Nonlinear_Buffer.cpp" />
+    <ClCompile Include="nes-snd-emu\Simple_Apu.cpp" />
+    <ClCompile Include="nes-snd-emu\Sound_Queue.cpp" />
     <ClCompile Include="NES.cpp" />
     <ClCompile Include="PPU.cpp" />
     <ClCompile Include="PPUCycleFunctions.cpp" />
@@ -172,6 +184,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AllMappers.h" />
+    <ClInclude Include="APU.h" />
     <ClInclude Include="Controller.h" />
     <ClInclude Include="CPU.h" />
     <ClInclude Include="CPUInstructions.h" />
@@ -190,12 +203,27 @@
     <ClInclude Include="imgui_stdlib.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Interrupts.h" />
-    <ClInclude Include="json\json.hpp" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="Mapper.h" />
     <ClInclude Include="MapperMMC1.h" />
     <ClInclude Include="MapperNROM.h" />
     <ClInclude Include="Memory.h" />
+    <ClInclude Include="nes-snd-emu\boost\config.hpp" />
+    <ClInclude Include="nes-snd-emu\boost\cstdint.hpp" />
+    <ClInclude Include="nes-snd-emu\boost\static_assert.hpp" />
+    <ClInclude Include="nes-snd-emu\nes_apu\apu_snapshot.h" />
+    <ClInclude Include="nes-snd-emu\nes_apu\blargg_common.h" />
+    <ClInclude Include="nes-snd-emu\nes_apu\blargg_source.h" />
+    <ClInclude Include="nes-snd-emu\nes_apu\Blip_Buffer.h" />
+    <ClInclude Include="nes-snd-emu\nes_apu\Blip_Synth.h" />
+    <ClInclude Include="nes-snd-emu\nes_apu\Multi_Buffer.h" />
+    <ClInclude Include="nes-snd-emu\nes_apu\Nes_Apu.h" />
+    <ClInclude Include="nes-snd-emu\nes_apu\Nes_Namco.h" />
+    <ClInclude Include="nes-snd-emu\nes_apu\Nes_Oscs.h" />
+    <ClInclude Include="nes-snd-emu\nes_apu\Nes_Vrc6.h" />
+    <ClInclude Include="nes-snd-emu\nes_apu\Nonlinear_Buffer.h" />
+    <ClInclude Include="nes-snd-emu\Simple_Apu.h" />
+    <ClInclude Include="nes-snd-emu\Sound_Queue.h" />
     <ClInclude Include="NES.h" />
     <ClInclude Include="PPU.h" />
     <ClInclude Include="Renderer.h" />

@@ -58,8 +58,14 @@
     <Filter Include="Source Files\Input">
       <UniqueIdentifier>{2bc06086-2fe3-4b8a-9c55-5fc3dc6e7c20}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\json">
-      <UniqueIdentifier>{b5a3da5d-893f-4013-87bd-26a27d94f431}</UniqueIdentifier>
+    <Filter Include="nes_snd_emu">
+      <UniqueIdentifier>{3928fe7e-2f9c-4ed2-b385-839aa527a019}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nes_snd_emu\boost">
+      <UniqueIdentifier>{c4d6e313-c37a-4587-88d6-15ae37591b84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nes_snd_emu\nes_apu">
+      <UniqueIdentifier>{bef61f0f-39fe-4f14-8ebf-7b073417d334}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -165,6 +171,39 @@
     <ClCompile Include="PPUSpriteEvaluationFunctions.cpp">
       <Filter>Source Files\PPU</Filter>
     </ClCompile>
+    <ClCompile Include="nes-snd-emu\nes_apu\apu_snapshot.cpp">
+      <Filter>nes_snd_emu\nes_apu</Filter>
+    </ClCompile>
+    <ClCompile Include="nes-snd-emu\nes_apu\Blip_Buffer.cpp">
+      <Filter>nes_snd_emu\nes_apu</Filter>
+    </ClCompile>
+    <ClCompile Include="nes-snd-emu\nes_apu\Multi_Buffer.cpp">
+      <Filter>nes_snd_emu\nes_apu</Filter>
+    </ClCompile>
+    <ClCompile Include="nes-snd-emu\nes_apu\Nes_Apu.cpp">
+      <Filter>nes_snd_emu\nes_apu</Filter>
+    </ClCompile>
+    <ClCompile Include="nes-snd-emu\nes_apu\Nes_Namco.cpp">
+      <Filter>nes_snd_emu\nes_apu</Filter>
+    </ClCompile>
+    <ClCompile Include="nes-snd-emu\nes_apu\Nes_Oscs.cpp">
+      <Filter>nes_snd_emu\nes_apu</Filter>
+    </ClCompile>
+    <ClCompile Include="nes-snd-emu\nes_apu\Nes_Vrc6.cpp">
+      <Filter>nes_snd_emu\nes_apu</Filter>
+    </ClCompile>
+    <ClCompile Include="nes-snd-emu\nes_apu\Nonlinear_Buffer.cpp">
+      <Filter>nes_snd_emu\nes_apu</Filter>
+    </ClCompile>
+    <ClCompile Include="nes-snd-emu\Simple_Apu.cpp">
+      <Filter>nes_snd_emu</Filter>
+    </ClCompile>
+    <ClCompile Include="nes-snd-emu\Sound_Queue.cpp">
+      <Filter>nes_snd_emu</Filter>
+    </ClCompile>
+    <ClCompile Include="APU.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NES.h">
@@ -257,11 +296,59 @@
     <ClInclude Include="imgui_stdlib.h">
       <Filter>Header Files\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="json\json.hpp">
-      <Filter>Header Files\json</Filter>
-    </ClInclude>
     <ClInclude Include="StandardController.h">
       <Filter>Header Files\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="nes-snd-emu\boost\config.hpp">
+      <Filter>nes_snd_emu\boost</Filter>
+    </ClInclude>
+    <ClInclude Include="nes-snd-emu\boost\cstdint.hpp">
+      <Filter>nes_snd_emu\boost</Filter>
+    </ClInclude>
+    <ClInclude Include="nes-snd-emu\boost\static_assert.hpp">
+      <Filter>nes_snd_emu\boost</Filter>
+    </ClInclude>
+    <ClInclude Include="nes-snd-emu\nes_apu\apu_snapshot.h">
+      <Filter>nes_snd_emu\nes_apu</Filter>
+    </ClInclude>
+    <ClInclude Include="nes-snd-emu\nes_apu\blargg_common.h">
+      <Filter>nes_snd_emu\nes_apu</Filter>
+    </ClInclude>
+    <ClInclude Include="nes-snd-emu\nes_apu\blargg_source.h">
+      <Filter>nes_snd_emu\nes_apu</Filter>
+    </ClInclude>
+    <ClInclude Include="nes-snd-emu\nes_apu\Blip_Buffer.h">
+      <Filter>nes_snd_emu\nes_apu</Filter>
+    </ClInclude>
+    <ClInclude Include="nes-snd-emu\nes_apu\Blip_Synth.h">
+      <Filter>nes_snd_emu\nes_apu</Filter>
+    </ClInclude>
+    <ClInclude Include="nes-snd-emu\nes_apu\Multi_Buffer.h">
+      <Filter>nes_snd_emu\nes_apu</Filter>
+    </ClInclude>
+    <ClInclude Include="nes-snd-emu\nes_apu\Nes_Apu.h">
+      <Filter>nes_snd_emu\nes_apu</Filter>
+    </ClInclude>
+    <ClInclude Include="nes-snd-emu\nes_apu\Nes_Namco.h">
+      <Filter>nes_snd_emu\nes_apu</Filter>
+    </ClInclude>
+    <ClInclude Include="nes-snd-emu\nes_apu\Nes_Oscs.h">
+      <Filter>nes_snd_emu\nes_apu</Filter>
+    </ClInclude>
+    <ClInclude Include="nes-snd-emu\nes_apu\Nes_Vrc6.h">
+      <Filter>nes_snd_emu\nes_apu</Filter>
+    </ClInclude>
+    <ClInclude Include="nes-snd-emu\nes_apu\Nonlinear_Buffer.h">
+      <Filter>nes_snd_emu\nes_apu</Filter>
+    </ClInclude>
+    <ClInclude Include="nes-snd-emu\Simple_Apu.h">
+      <Filter>nes_snd_emu</Filter>
+    </ClInclude>
+    <ClInclude Include="nes-snd-emu\Sound_Queue.h">
+      <Filter>nes_snd_emu</Filter>
+    </ClInclude>
+    <ClInclude Include="APU.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

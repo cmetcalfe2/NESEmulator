@@ -1,5 +1,6 @@
 #include "Memory.h"
 #include "PPU.h"
+#include "APU.h"
 #include <stdint.h>
 
 
@@ -162,6 +163,9 @@ void Memory::SetIORegister(uint16_t addr, uint8_t val)
 		break;
 	case 0x4017:
 		InputManager::GetInstance()->WriteController(1, val);
+		break;
+	default:
+		apu->WriteRegister(addr, val);
 		break;
 	}
 }

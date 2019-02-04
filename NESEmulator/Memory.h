@@ -5,6 +5,7 @@
 
 
 class PPU;
+class APU;
 
 class Memory
 {
@@ -16,6 +17,7 @@ public:
 
 	void SetMapper(Mapper* m) { mapper = m; };
 	void SetPPU(PPU* p) { ppu = p; };
+	void SetAPU(APU* a) { apu = a; };
 
 	static const int MEMORY_AMOUNT = 0x10000;
 	uint8_t memory[MEMORY_AMOUNT];
@@ -40,6 +42,7 @@ private:
 
 	Mapper* mapper;
 	PPU* ppu;
+	APU* apu;
 
 	uint16_t ppuOAMDMAAddr = 0x0000;
 	int curPPUOAMDMACycle = 0;

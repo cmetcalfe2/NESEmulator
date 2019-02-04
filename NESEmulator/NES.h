@@ -1,6 +1,7 @@
 #pragma once
 #include "CPU.h"
 #include "PPU.h"
+#include "APU.h"
 #include "Memory.h"
 #include "AllMappers.h"
 #include <string>
@@ -20,6 +21,7 @@ public:
 
 	CPU* processor;
 	PPU* ppu;
+	APU* apu;
 	Memory* memory;
 	Mapper* mapper;
 	InputManager* inputManager;
@@ -30,6 +32,9 @@ private:
 
 	const uint32_t cpuCyclesPerFrame = 1789773 / 60;
 	const int ppuCyclesPerCPUCycle = 3;
+
+	clock_t startTime;
+	int elapsedFrames = 0;
 
 };
 

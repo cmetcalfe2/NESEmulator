@@ -15,14 +15,15 @@ public:
 	bool Run();
 
 private:
+	void PollEvents();
+
+	NES nes;
+	Renderer* renderer;
+
 	bool running = true;
 
 	bool romLoaded = false;
 	bool pauseEmulation = false;
 
-	NES nes;
-	Renderer* renderer;
-
-	void PollEvents();
 };
 

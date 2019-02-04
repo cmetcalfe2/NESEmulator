@@ -8,8 +8,12 @@ NES::NES()
 	interrupts = new Interrupts();
 	processor = new CPU(memory, interrupts);
 	ppu = new PPU(memory, interrupts);
+	apu = new APU(memory);
 
 	memory->SetPPU(ppu);
+	memory->SetAPU(apu);
+
+	startTime = std::clock();
 }
 
 
@@ -153,5 +157,16 @@ void NES::RunOneFrame()
 	{
 		Cycle();
 		cpuCycles++;
+	}
+	apu->RunForOneFrame();
+
+	elapsedFrames++;
+
+	if (elapsedFrames == 60)
+	{
+		elapsedFrames = 0;
+		long double time = (long double)(std::clock() - startTime) / (long double)CLOCKS_PER_SEC;
+		startTime = std::clock();
+		printf("Frametime - %f\n", 1.0 / (time / 60.0));
 	}
 }
