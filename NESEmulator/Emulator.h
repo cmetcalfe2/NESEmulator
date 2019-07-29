@@ -22,7 +22,6 @@ private:
 
 	bool running = true;
 
-	bool romLoaded = false;
 	bool pauseEmulation = false;
 
 };

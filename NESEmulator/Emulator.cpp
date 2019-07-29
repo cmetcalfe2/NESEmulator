@@ -45,7 +45,7 @@ bool Emulator::Init()
 	//romLoaded = nes.LoadROM("C:/Users/Craig/Documents/Projects/NESEmulator/ROMs/Zelda.NES");
 	//romLoaded = nes.LoadROM("C:/Users/Craig/Documents/Projects/NESEmulator/ROMs/nestest.nes");
 	//romLoaded = nes.LoadROM("C:/Users/Craig/Documents/Projects/NESEmulator/ROMs/Super_Mario_Bros..nes");
-	romLoaded = nes.LoadROM("C:/Users/Craig/Documents/Projects/NESEmulator/ROMs/nes-test-roms-master/sprite_overflow_tests/1.Basics.nes");
+	//romLoaded = nes.LoadROM("C:/Users/Craig/Documents/Projects/NESEmulator/ROMs/nes-test-roms-master/sprite_overflow_tests/1.Basics.nes");
 	
 	return true;
 }
@@ -54,12 +54,13 @@ bool Emulator::Run()
 {
 	PollEvents();
 
-	if (romLoaded && !pauseEmulation)
+	if (nes.romLoaded && !pauseEmulation)
 	{
 		nes.RunOneFrame();
 		renderer->CopyEmulatorFrameToTexture(nes.ppu->GetPixelBuffer());
-		renderer->Render();
 	}
+
+	renderer->Render();
 
 	return running;
 }

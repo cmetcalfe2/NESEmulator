@@ -19,6 +19,8 @@ public:
 	void RunOneFrame();
 	void Cycle();
 
+	bool romLoaded = false;
+
 	CPU* processor;
 	PPU* ppu;
 	APU* apu;

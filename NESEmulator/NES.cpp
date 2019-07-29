@@ -59,7 +59,8 @@ bool NES::LoadROM(std::string path)
 		if (std::strcmp(headerBuffer, "NES") != 0 || verificationByte != 0x1A)
 		{ 
 			printf("Failed to load program (not iNES file) - %s\n", path.c_str());
-			return false;
+			romLoaded = false;
+			return romLoaded;
 		}
 
 		uint8_t numPRGBanks = input.get();
@@ -105,12 +106,14 @@ bool NES::LoadROM(std::string path)
 		processor->Reset();
 		ppu->Reset();
 
-		return true;
+		romLoaded = true;
+		return romLoaded;
 	}
 	else
 	{
 		printf("Failed to load program - %s\n", path.c_str());
-		return false;
+		romLoaded = false;
+		return romLoaded;
 	}
 }
 
