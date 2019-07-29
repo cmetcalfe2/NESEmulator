@@ -112,7 +112,7 @@ void Sound_Queue::write( const sample_t* in, int count )
 		{
 			write_pos = 0;
 			write_buf = (write_buf + 1) % buf_count;
-			//SDL_SemWait( free_sem );
+			SDL_SemWait( free_sem );
 		}
 	}
 }

@@ -40,12 +40,12 @@ bool Emulator::Init()
 		}
 	}
 
-	romLoaded = nes.LoadROM("C:/Users/Craig/Documents/Projects/NESEmulator/ROMs/instr_test-v5/rom_singles/15-brk.nes");
+	//romLoaded = nes.LoadROM("C:/Users/Craig/Documents/Projects/NESEmulator/ROMs/instr_test-v5/rom_singles/15-brk.nes");
 	//romLoaded = nes.LoadROM("C:/Users/Craig/Documents/Projects/NESEmulator/ROMs/ROM Collection/Balloon Fight (USA).nes");
 	//romLoaded = nes.LoadROM("C:/Users/Craig/Documents/Projects/NESEmulator/ROMs/Zelda.NES");
 	//romLoaded = nes.LoadROM("C:/Users/Craig/Documents/Projects/NESEmulator/ROMs/nestest.nes");
 	//romLoaded = nes.LoadROM("C:/Users/Craig/Documents/Projects/NESEmulator/ROMs/Super_Mario_Bros..nes");
-	//romLoaded = nes.LoadROM("C:/Users/Craig/Documents/Projects/NESEmulator/ROMs/nes-test-roms-master/sprite_overflow_tests/1.Basics.nes");
+	romLoaded = nes.LoadROM("C:/Users/Craig/Documents/Projects/NESEmulator/ROMs/nes-test-roms-master/sprite_overflow_tests/1.Basics.nes");
 	
 	return true;
 }

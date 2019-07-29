@@ -222,7 +222,7 @@ void PPU::InitCycleFunctionVectors()
 	{
 		for (int y = 0; y < 262; y++)
 		{
-			std::vector<CycleFunction> functionVector;
+			uint32_t cycleFunctionMask = 0;
 
 			if (y < 240 || y == 261)
 			{
@@ -234,41 +234,41 @@ void PPU::InitCycleFunctionVectors()
 					if (!isPreRenderLine)
 					{
 						// Render pixel
-						functionVector.push_back(&PPU::RenderPixel);
+						cycleFunctionMask |= BCIM_RENDERPIXEL;
 					}
 				}
 
 				// Visible lines / Prerender line
 				if ((x > 0 && x <= 256) || (x >= 321 && x <= 336))
 				{
-					functionVector.push_back(&PPU::ShiftBGRegisters);
+					cycleFunctionMask |= BCIM_SHIFTBGREGISTERS;
 
 					int subCycle = x % 8;
 					switch (subCycle)
 					{
 					case 0:
-						functionVector.push_back(&PPU::IncCurVRAMAddrHorizontal);
+						cycleFunctionMask |= BCIM_INCRVRAMHORIZONTAL;
 						if (x == 256)
 						{
-							functionVector.push_back(&PPU::IncCurVRAMAddrVertical);
+							cycleFunctionMask |= BCIM_INCVRAMVERTICAL;
 						}
-						functionVector.push_back(&PPU::FeedBGRegisters);
+						cycleFunctionMask |= BCIM_FEEDBGREGISTERS;
 						break;
 					case 1:
-						functionVector.push_back(&PPU::FetchNTByte);
+						cycleFunctionMask |= BCIM_FETCHNTBYTE;
 						if (x == 1 && isPreRenderLine)
 						{
-							functionVector.push_back(&PPU::ClearFlags);
+							cycleFunctionMask |= BCIM_CLEARFLAGS;
 						}
 						break;
 					case 3:
-						functionVector.push_back(&PPU::FetchATByte);
+						cycleFunctionMask |= BCIM_FETCHATBYTE;
 						break;
 					case 5:
-						functionVector.push_back(&PPU::FetchLowBGByte);
+						cycleFunctionMask |= BCIM_FETCHLOWBGBYTE;
 						break;
 					case 7:
-						functionVector.push_back(&PPU::FetchHighBGByte);
+						cycleFunctionMask |= BCIM_FETCHHIGHBGBYTE;
 						break;
 					}
 				}
@@ -276,31 +276,26 @@ void PPU::InitCycleFunctionVectors()
 				if (x == 257)
 				{
 					// hori v = hori t
-					functionVector.push_back(&PPU::CopyVRAMAddrHorizontal);
+					cycleFunctionMask |= BCIM_COPYVRAMHORIZONTAL;
 				}
 
 				if (isPreRenderLine && x >= 280 && x <= 304)
 				{
 					// vert v = vert t
-					functionVector.push_back(&PPU::CopyVRAMAddrVertical);
+					cycleFunctionMask |= BCIM_COPYVRAMVERTICAL;
 				}
 
 				if (x == 337 || x == 339)
 				{
-					functionVector.push_back(&PPU::FetchNTByte);
+					cycleFunctionMask |= BCIM_FETCHNTBYTE;
 				}
 			}
 			else if (y == 241 && x == 1)
 			{
-				functionVector.push_back(&PPU::SetVBlankStartedFlag);
+				cycleFunctionMask |= BCIM_SETVBLANKFLAG;
 			}
 
-			numFunctionsInCycle[x][y] = functionVector.size();
-
-			for (int i = 0; i < functionVector.size(); i++)
-			{
-				cycleFunctions[x][y][i] = functionVector[i];
-			}
+			cycleFunctionMasks[x][y] = cycleFunctionMask;
 
 		}
 	}
@@ -396,6 +391,8 @@ void PPU::Cycle()
 	}
 
 	/* END TEST */
+
+	//BGCycle();
 
 	if (renderingEnabled && (curScanline < 240 || curScanline == 261))
 	{

@@ -192,9 +192,10 @@ void PPU::RenderPixel()
 
 		if (curPixel > 8 || leftMostBGEnabled)
 		{
-			renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][3] = nesPalette[paletteVal].r;
-			renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][2] = nesPalette[paletteVal].g;
-			renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][1] = nesPalette[paletteVal].b;
+			NESPixel pixel = nesPalette[paletteVal];
+			renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][3] = pixel.r;
+			renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][2] = pixel.g;
+			renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][1] = pixel.b;
 			renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][0] = 0xFF;
 		}
 		else
@@ -236,9 +237,10 @@ void PPU::RenderPixel()
 
 					if ((bgPattern == 0 || !(spriteAttributes[i] & 0x20)) && (curPixel > 8 || leftMostSpritesEnabled))
 					{
-						renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][3] = nesPalette[palletteVal].r;
-						renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][2] = nesPalette[palletteVal].g;
-						renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][1] = nesPalette[palletteVal].b;
+						NESPixel pixel = nesPalette[palletteVal];
+						renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][3] = pixel.r;
+						renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][2] = pixel.g;
+						renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][1] = pixel.b;
 						renderedPixelBuffers[activePixelBuffer][(curScanline * SCREEN_WIDTH) + (curPixel - 1)][0] = 0xFF;
 					}
 					break;
@@ -255,4 +257,127 @@ void PPU::ShiftBGRegisters()
 
 	bgAttributeRegisters[0] >>= 1;
 	bgAttributeRegisters[1] >>= 1;
+}
+
+void PPU::BGCycle()
+{
+	uint32_t cycleFunctionMask = cycleFunctionMasks[curPixel][curScanline];
+
+	switch (cycleFunctionMask)
+	{
+
+	case 0:
+		// Do nothing
+		break;
+
+	case (BCIM_RENDERPIXEL | BCIM_SHIFTBGREGISTERS | BCIM_FETCHNTBYTE):
+		RenderPixel();
+		ShiftBGRegisters();
+		FetchNTByte();
+		break;
+
+	case (BCIM_SETVBLANKFLAG):
+		SetVBlankStartedFlag();
+		break;
+
+	case (BCIM_SHIFTBGREGISTERS | BCIM_FETCHNTBYTE | BCIM_CLEARFLAGS):
+		ShiftBGRegisters();
+		FetchNTByte();
+		ClearFlags();
+		break;
+
+	case (BCIM_RENDERPIXEL | BCIM_SHIFTBGREGISTERS):
+		RenderPixel();
+		ShiftBGRegisters();
+		break;
+
+	case (BCIM_SHIFTBGREGISTERS):
+		ShiftBGRegisters();
+		break;
+
+	case (BCIM_RENDERPIXEL | BCIM_SHIFTBGREGISTERS | BCIM_FETCHATBYTE):
+		RenderPixel();
+		ShiftBGRegisters();
+		FetchATByte();
+		break;
+
+	case (BCIM_SHIFTBGREGISTERS | BCIM_FETCHATBYTE):
+		ShiftBGRegisters();
+		FetchATByte();
+		break;
+
+	case (BCIM_RENDERPIXEL | BCIM_SHIFTBGREGISTERS | BCIM_FETCHLOWBGBYTE):
+		RenderPixel();
+		ShiftBGRegisters();
+		FetchLowBGByte();
+		break;
+
+	case (BCIM_SHIFTBGREGISTERS | BCIM_FETCHLOWBGBYTE):
+		ShiftBGRegisters();
+		FetchLowBGByte();
+		break;
+
+	case (BCIM_RENDERPIXEL | BCIM_SHIFTBGREGISTERS | BCIM_FETCHHIGHBGBYTE):
+		RenderPixel();
+		ShiftBGRegisters();
+		FetchHighBGByte();
+		break;
+
+	case (BCIM_SHIFTBGREGISTERS | BCIM_FETCHHIGHBGBYTE):
+		ShiftBGRegisters();
+		FetchHighBGByte();
+		break;
+
+	case (BCIM_RENDERPIXEL | BCIM_SHIFTBGREGISTERS | BCIM_INCRVRAMHORIZONTAL | BCIM_FEEDBGREGISTERS):
+		RenderPixel();
+		ShiftBGRegisters();
+		IncCurVRAMAddrHorizontal();
+		FeedBGRegisters();
+		break;
+
+	case (BCIM_SHIFTBGREGISTERS | BCIM_INCRVRAMHORIZONTAL | BCIM_FEEDBGREGISTERS):
+		ShiftBGRegisters();
+		IncCurVRAMAddrHorizontal();
+		FeedBGRegisters();
+		break;
+
+	case (BCIM_SHIFTBGREGISTERS | BCIM_FETCHNTBYTE):
+		ShiftBGRegisters();
+		FetchNTByte();
+		break;
+
+	case (BCIM_RENDERPIXEL | BCIM_SHIFTBGREGISTERS | BCIM_INCRVRAMHORIZONTAL | BCIM_INCVRAMVERTICAL | BCIM_FEEDBGREGISTERS):
+		RenderPixel();
+		ShiftBGRegisters();
+		IncCurVRAMAddrHorizontal();
+		IncCurVRAMAddrVertical();
+		FeedBGRegisters();
+		break;
+
+	case (BCIM_SHIFTBGREGISTERS | BCIM_INCRVRAMHORIZONTAL | BCIM_INCVRAMVERTICAL | BCIM_FEEDBGREGISTERS):
+		ShiftBGRegisters();
+		IncCurVRAMAddrHorizontal();
+		IncCurVRAMAddrVertical();
+		FeedBGRegisters();
+		break;
+
+	case (BCIM_COPYVRAMHORIZONTAL):
+		CopyVRAMAddrHorizontal();
+		break;
+
+	case (BCIM_COPYVRAMVERTICAL):
+		CopyVRAMAddrVertical();
+		break;
+
+	case (BCIM_FETCHNTBYTE):
+		FetchNTByte();
+		break;
+
+	default:
+		// This shouldn't happen
+		int test = 0;
+		break;
+
+	}
+
 }

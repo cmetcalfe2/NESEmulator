@@ -24,6 +24,23 @@ enum NametableMirroringMode
 	MIRRORING_4SCREEN = 3
 };
 
+enum BackgroundCycleInstructionMask
+{
+	BCIM_RENDERPIXEL = 0x1,
+	BCIM_SHIFTBGREGISTERS = 0x2,
+	BCIM_SETVBLANKFLAG = 0x4,
+	BCIM_FETCHNTBYTE = 0x8,
+	BCIM_FETCHATBYTE = 0x10,
+	BCIM_FETCHLOWBGBYTE = 0x20,
+	BCIM_FETCHHIGHBGBYTE = 0x40,
+	BCIM_INCRVRAMHORIZONTAL = 0x80,
+	BCIM_INCVRAMVERTICAL = 0x100,
+	BCIM_FEEDBGREGISTERS = 0x200,
+	BCIM_COPYVRAMHORIZONTAL = 0x400,
+	BCIM_COPYVRAMVERTICAL = 0x800,
+	BCIM_CLEARFLAGS = 0x1000
+};
+
 struct NESPixel
 {
 	uint8_t r;
@@ -80,6 +97,8 @@ private:
 	void SpriteEvaluationCycle();
 
 	// Cycle functions
+	void BGCycle();
+
 	void FetchNTByte();
 	void FetchATByte();
 	void FetchLowBGByte();
@@ -103,6 +122,7 @@ private:
 	// Array of vectors of functions to be ran at each cycle
 	CycleFunction cycleFunctions[341][262][10];
 	int numFunctionsInCycle[341][262];
+	uint32_t cycleFunctionMasks[341][262];
 
 	// Sprite evaluation functions
 	bool IsSpriteYInRange();
